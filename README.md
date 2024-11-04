@@ -1,4 +1,4 @@
-**Chương 1: Ôn tập Mạng máy tính**
+## Chương 1: Ôn tập Mạng máy tính
 ### <a name="_egx7yufmih29"></a>**1. Khái niệm Cơ bản về mạng máy tính**
 - **Định nghĩa**: Là tập hợp các máy tính (máy trạm, máy chủ, bộ định tuyến) kết nối với nhau để chia sẻ tài nguyên và dữ liệu.
 - **Hình dạng Mạng**: Các bố cục phổ biến bao gồm trục (Bus), vòng (Ring), và sao (Star).
@@ -30,7 +30,7 @@
 - **Giao tiếp**: Liên quan đến việc trao đổi thông điệp giữa các tiến trình máy khách và máy chủ, tuân theo các giao thức (ví dụ, HTTP, FTP).
 - **Giao thức Tầng Ứng dụng**: Xác định các loại thông điệp, cú pháp, ngữ nghĩa và quy tắc giao tiếp.
 
-**Chương 3: Socket APIs**
+## Chương 3: Socket APIs
 ### <a name="_6tl1a14t25na"></a>**1. Khái niệm Cơ bản về Socket**
 - **Socket Pair:** Một bộ gồm bốn yếu tố xác định điểm kết nối giữa hai đầu:
   - Địa chỉ IP cục bộ và địa chỉ IP từ xa
@@ -129,7 +129,7 @@
   |ssize\_t write(int sockfd, const void \*buf, size\_t count); |
   | :- |
 
-**Chương 4: TCP sockets**
+## Chương 4: TCP sockets
 
 ![](Aspose.Words.944413dd-74b5-4e4a-8545-bf263d9fe9ba.004.png)
 
@@ -236,7 +236,7 @@
 ![](Aspose.Words.944413dd-74b5-4e4a-8545-bf263d9fe9ba.009.png)
 
 
-**Chương 5: I/O Multiplexing**
+## Chương 5: I/O Multiplexing
 ### <a name="_aby5yms8ib0k"></a>**1. Giới thiệu về I/O Multiplexing**
 - **Vấn đề:** Khi một client phải xử lý đồng thời nhiều nguồn dữ liệu (như đầu vào chuẩn và socket TCP), có thể xảy ra tình huống bị khóa khi chờ dữ liệu từ một nguồn (ví dụ: fgets đọc đầu vào chuẩn), trong khi sự kiện từ nguồn khác (như đóng kết nối từ server) không được xử lý kịp thời.
 - **Giải pháp:** Sử dụng I/O Multiplexing (đa luồng đầu vào/đầu ra) giúp nhận thông báo từ hệ điều hành khi có một hoặc nhiều điều kiện I/O sẵn sàng, giúp client xử lý các sự kiện khác nhau một cách hiệu quả.
@@ -313,7 +313,7 @@
 **
 
 
-**Chương 6: UDP Sockets**
+## Chương 6: UDP Sockets
 ### <a name="_81886d4gchh"></a>**1. Giới thiệu về Giao thức UDP**
 - UDP (User Datagram Protocol) là giao thức không kết nối, không đáng tin cậy, sử dụng các gói dữ liệu (datagram) để truyền thông tin.
 - Một số ứng dụng phổ biến sử dụng UDP: DNS (Domain Name System), NFS (Network File System), và SNMP (Simple Network Management Protocol).
