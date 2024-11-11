@@ -2,6 +2,31 @@
 
 This is a project for the network programming practice course.
 
+## Project structure
+
+```sh
+.
+├── app
+│   ├── client.c
+│   ├── server.c
+│   └── users.txt
+├── GUI
+│   ├── gui
+│   └── gui.c
+├── model
+│   ├── message.c
+│   ├── message.h
+│   ├── user.c
+│   └── user.h
+├── READM
+```
+
+**To run**
+```sh
+cd release
+make
+```
+
 Compile GUI:
 ```c
 gcc gui.c -o gui `pkg-config --cflags --libs gtk4`
