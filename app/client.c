@@ -1,109 +1,92 @@
-// client.c
-
+#include <gtk/gtk.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <glib.h>
 
 #define PORT 8080
-#define BUFFER_SIZE 1024
 
-// typedef struct {
-//     uint8_t message_type;
-//     char payload[BUFFER_SIZE];
-// } Message;
-#include <../model/message.h>
+#include "../model/user.h"
+#include "../model/message.h"
+#include "../gui/client_gui_helpers.h"
 
-enum MessageType { REGISTER_REQUEST = 0, LOGIN_REQUEST = 1, LOGOUT_REQUEST = 2 };
+void activate(GtkApplication *app, gpointer user_data);
 
-void send_register_request(int sock, const char *username, const char *password);
-void send_login_request(int sock, const char *username, const char *password);
-void send_logout_request(int sock, const char *username);
-
-int main() {
+int main(int argc, char **argv) {
+    GtkApplication *app;
+    int status;
     int sock;
     struct sockaddr_in server_addr;
-    char username[50], password[50];
-    int choice;
 
     sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0) {
+        perror("Socket creation error");
+        return -1;
+    }
+
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     server_addr.sin_port = htons(PORT);
 
     if (connect(sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
         perror("Connection failed");
-        return 1;
-    }
-
-    printf("Select option:\n1. Register\n2. Login\nChoice: ");
-    scanf("%d", &choice);
-    printf("Enter username: ");
-    scanf("%s", username);
-    printf("Enter password: ");
-    scanf("%s", password);
-
-    if (choice == 1) {
-        // Send register request
-        send_register_request(sock, username, password);
-    } else if (choice == 2) {
-        // Send login request
-        send_login_request(sock, username, password);
-    } else {
-        printf("Invalid choice\n");
         close(sock);
-        return 1;
+        return -1;
     }
 
-    // Receive response from server
-    Message response;
-    if (recv(sock, &response, sizeof(Message), 0) > 0) {
-        printf("Server response: %s\n", response.payload);
-    }
+    // Initialize GTK application
+    app = gtk_application_new("game.wordle.signup_login", G_APPLICATION_FLAGS_NONE);
 
-    // Lựa chọn để đăng xuất khi cần
-    while (1) {
-        printf("Enter 'logout' to log out or 'exit' to quit the application: ");
-        char command[BUFFER_SIZE];
-        scanf("%s", command);
+    g_signal_connect(app, "activate", G_CALLBACK(activate), GINT_TO_POINTER(sock));
 
-        if (strcmp(command, "logout") == 0) {
-            // Gửi yêu cầu đăng xuất
-            send_logout_request(sock, username);
-            if (recv(sock, &response, sizeof(Message), 0) > 0) {
-                printf("Server response: %s\n", response.payload);
-            }
-            break;
-        } else if (strcmp(command, "exit") == 0) {
-            printf("Exiting application.\n");
-            break;
-        } else {
-            printf("Unknown command. Please enter 'logout' or 'exit'.\n");
-        }
-    }
+    status = g_application_run(G_APPLICATION(app), argc, argv);
 
     close(sock);
-    return 0;
+    g_object_unref(app);
+    return status;
 }
 
-void send_register_request(int sock, const char *username, const char *password) {
-    Message message;
-    message.message_type = REGISTER_REQUEST;
-    snprintf(message.payload, sizeof(message.payload), "%s|%s", username, password);
-    send(sock, &message, sizeof(message), 0);
-}
+void activate(GtkApplication *app, gpointer user_data) {
+    int sock = GPOINTER_TO_INT(user_data);
 
-void send_login_request(int sock, const char *username, const char *password) {
-    Message message;
-    message.message_type = LOGIN_REQUEST;
-    snprintf(message.payload, sizeof(message.payload), "%s|%s", username, password);
-    send(sock, &message, sizeof(message), 0);
-}
+    // Create FormDataRequests for both signup and login
+    FormDataRequest *signup_form_data = g_new0(FormDataRequest, 1);
+    signup_form_data->sock = sock;
+    signup_form_data->request_type = SIGNUP_REQUEST;
 
-void send_logout_request(int sock, const char *username) {
-    Message message;
-    message.message_type = LOGOUT_REQUEST;
-    snprintf(message.payload, sizeof(message.payload), "%s", username);
-    send(sock, &message, sizeof(message), 0);
+    FormDataRequest *login_form_data = g_new0(FormDataRequest, 1);
+    login_form_data->sock = sock;
+    login_form_data->request_type = LOGIN_REQUEST;
+
+    // Create the main window
+    GtkWidget *window = create_main_window(app);
+
+    // Create the vertical box layout
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    gtk_window_set_child(GTK_WINDOW(window), vbox);
+
+    // Create the stack widget to hold pages
+    GtkWidget *stack = gtk_stack_new();
+    gtk_stack_set_transition_type(GTK_STACK(stack), GTK_STACK_TRANSITION_TYPE_SLIDE_LEFT_RIGHT);
+    gtk_stack_set_transition_duration(GTK_STACK(stack), 300);
+
+    // Create Sign Up and Login pages and add to stack
+    GtkWidget *signup_page = create_signup_form_page(signup_form_data, stack);
+    GtkWidget *login_page = create_login_form_page(login_form_data, stack);
+
+    gtk_stack_add_named(GTK_STACK(stack), signup_page, "signup_page");
+    gtk_stack_add_named(GTK_STACK(stack), login_page, "login_page");
+    /* ... More pages ... */
+
+    // Create the stack switcher to switch between pages
+    GtkWidget *stack_switcher = gtk_stack_switcher_new();
+    gtk_stack_switcher_set_stack(GTK_STACK_SWITCHER(stack_switcher), GTK_STACK(stack));
+    gtk_box_append(GTK_BOX(vbox), stack_switcher);
+
+    // Add the stack to the main vertical box
+    gtk_box_append(GTK_BOX(vbox), stack);
+
+    gtk_widget_show(window);
 }
