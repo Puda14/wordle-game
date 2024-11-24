@@ -24,7 +24,7 @@ typedef struct {
   char password[256];
   GtkWidget *infor_label;
   enum MessageType request_type;
-} ThreadDataRequest;ss
+} ThreadDataRequest;
 
 GtkWidget* create_main_window(GtkApplication *app);
 
