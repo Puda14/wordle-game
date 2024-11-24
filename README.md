@@ -10,15 +10,25 @@ This is a project for the network programming practice course.
 │   ├── client.c
 │   ├── server.c
 │   └── users.txt
-├── GUI
-│   ├── gui
-│   └── gui.c
+├── gui
+│   ├── client_gui_helpers.c
+│   └── client_gui_helpers.h
 ├── model
 │   ├── message.c
 │   ├── message.h
 │   ├── user.c
 │   └── user.h
-├── READM
+├── README.md
+├── release
+│   └── Makefile
+├── service
+│   ├── auth.c
+│   └── auth.h
+└── tmp
+    ├── client-gui.c
+    ├── client_gui_tmp.c
+    ├── gui.c
+    └── switch.c
 ```
 
 **To run**
