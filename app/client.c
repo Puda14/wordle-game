@@ -5,6 +5,14 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <glib.h>
+#include <signal.h>
+
+char logged_in_username[50] = "";
+volatile sig_atomic_t quit_flag = 0;
+
+void handle_sigint(int sig) {
+    quit_flag = 1;
+}
 
 #define PORT 8080
 
@@ -15,6 +23,12 @@
 void activate(GtkApplication *app, gpointer user_data);
 
 int main(int argc, char **argv) {
+    struct sigaction sa;
+    sa.sa_handler = handle_sigint;
+    sa.sa_flags = 0;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGINT, &sa, NULL);
+
     GtkApplication *app;
     int status;
     int sock;
@@ -43,6 +57,12 @@ int main(int argc, char **argv) {
 
     status = g_application_run(G_APPLICATION(app), argc, argv);
 
+    if (quit_flag && logged_in_username[0] != '\0') {
+        send_logout_request(sock, logged_in_username);
+    }
+
+    status = g_application_run(G_APPLICATION(app), argc, argv);
+
     close(sock);
     g_object_unref(app);
     return status;
@@ -60,6 +80,11 @@ void activate(GtkApplication *app, gpointer user_data) {
     login_form_data->sock = sock;
     login_form_data->request_type = LOGIN_REQUEST;
 
+    // Create GamePageData
+    GamePageData *game_data = g_new0(GamePageData, 1);
+    game_data->sock = sock;
+    // strncpy(game_data->username, logged_in_username, sizeof(game_data->username));
+
     // Create the main window
     GtkWidget *window = create_main_window(app);
 
@@ -72,12 +97,16 @@ void activate(GtkApplication *app, gpointer user_data) {
     gtk_stack_set_transition_type(GTK_STACK(stack), GTK_STACK_TRANSITION_TYPE_SLIDE_LEFT_RIGHT);
     gtk_stack_set_transition_duration(GTK_STACK(stack), 300);
 
+    setStack(stack);
+
     // Create Sign Up and Login pages and add to stack
     GtkWidget *signup_page = create_signup_form_page(signup_form_data, stack);
     GtkWidget *login_page = create_login_form_page(login_form_data, stack);
+    GtkWidget *game_page = create_game_page(game_data, stack);
 
     gtk_stack_add_named(GTK_STACK(stack), signup_page, "signup_page");
     gtk_stack_add_named(GTK_STACK(stack), login_page, "login_page");
+    gtk_stack_add_named(GTK_STACK(stack), game_page, "game_page");
     /* ... More pages ... */
 
     // Create the stack switcher to switch between pages

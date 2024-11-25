@@ -11,6 +11,7 @@
 #define MAX_CLIENTS 30
 #define BUFFER_SIZE 1024
 #define USER_FILE "../app/users.txt"
+#define USER_TMP_FILE "../app/temp_users.txt"
 
 #include <../model/user.h>
 #include <../model/message.h>
@@ -67,6 +68,94 @@ int handle_sign_up(const char *username, const char *password) {
     return 0;
 }
 
+int handle_log_in(const char *username, const char *password) {
+    FILE *file = fopen(USER_FILE, "r+");
+    if (!file) {
+        perror("Error opening user file");
+        return -1;
+    }
+
+    char line[BUFFER_SIZE];
+    char temp_file[] = USER_TMP_FILE;
+    FILE *temp = fopen(temp_file, "w");
+    if (!temp) {
+        perror("Error creating temp file");
+        fclose(file);
+        return -1;
+    }
+
+    int found = 0;
+
+    while (fgets(line, sizeof(line), file)) {
+        int id, score, status;
+        char existing_username[50], existing_password[50];
+
+        sscanf(line, "%d %49s %49s %d %d", &id, existing_username, existing_password, &score, &status);
+
+        if (strcmp(existing_username, username) == 0 && strcmp(existing_password, password) == 0) {
+            found = 1;
+            status = 1;
+        }
+
+        fprintf(temp, "%d %s %s %d %d\n", id, existing_username, existing_password, score, status);
+    }
+
+    fclose(file);
+    fclose(temp);
+
+    if (found) {
+        rename(temp_file, USER_FILE);
+        return 0;
+    } else {
+        remove(temp_file);
+        return 2;  // User not found or password mismatch
+    }
+}
+
+int handle_log_out(const char *username) {
+    FILE *file = fopen(USER_FILE, "r+");
+    if (!file) {
+        perror("Error opening user file");
+        return -1;
+    }
+
+    char line[BUFFER_SIZE];
+    char temp_file[] = USER_TMP_FILE;
+    FILE *temp = fopen(temp_file, "w");
+    if (!temp) {
+        perror("Error creating temp file");
+        fclose(file);
+        return -1;
+    }
+
+    int found = 0;
+
+    while (fgets(line, sizeof(line), file)) {
+        int id, score, status;
+        char existing_username[50], existing_password[50];
+
+        sscanf(line, "%d %49s %49s %d %d", &id, existing_username, existing_password, &score, &status);
+
+        if (strcmp(existing_username, username) == 0) {
+            found = 1;
+            status = 0;  // Set status to logged out
+        }
+
+        fprintf(temp, "%d %s %s %d %d\n", id, existing_username, existing_password, score, status);
+    }
+
+    fclose(file);
+    fclose(temp);
+
+    if (found) {
+        rename(temp_file, USER_FILE);
+        return 0;  // Success
+    } else {
+        remove(temp_file);
+        return 2;  // User not found
+    }
+}
+
 
 void handle_message(int client_sock, Message *message) {
     if (message->message_type == SIGNUP_REQUEST) {
@@ -83,6 +172,33 @@ void handle_message(int client_sock, Message *message) {
         } else {
             message->status = 1;
             strcpy(message->payload, "Sign up failed");
+        }
+        send(client_sock, message, sizeof(Message), 0);
+   } else if (message->message_type == LOGIN_REQUEST) {
+        char username[50], password[50];
+        sscanf(message->payload, "%49[^|]|%49s", username, password);
+
+        int login_status = handle_log_in(username, password);
+        if (login_status == 0) {
+            message->status = 0;
+            strcpy(message->payload, "Login successful");
+        } else {
+            message->status = 1;
+            strcpy(message->payload, "Invalid username or password");
+        }
+        send(client_sock, message, sizeof(Message), 0);
+
+    } else if (message->message_type == LOGOUT_REQUEST) {
+        char username[50];
+        sscanf(message->payload, "%49s", username);
+
+        int logout_status = handle_log_out(username);
+        if (logout_status == 0) {
+            message->status = 0;
+            strcpy(message->payload, "Logout successful");
+        } else {
+            message->status = 1;
+            strcpy(message->payload, "Logout failed");
         }
         send(client_sock, message, sizeof(Message), 0);
     }

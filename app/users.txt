@@ -1,6 +1,6 @@
-1 tuan 1 0
-2 tuan1 1 0
-3 abc 123 0 0
+1 tuan 1 0 0
+2 tuan1 1 0 0
+3 abc 123 0 1
 4 bbb 123 0 0
 5 a 123 0 0
 6 aaabbnn 123 0 0
