@@ -6,65 +6,60 @@ This is a project for the network programming practice course.
 
 ```sh
 .
-├── app
-│   ├── client.c
-│   ├── server.c
-│   └── users.txt
-├── gui
-│   ├── client_gui_helpers.c
-│   └── client_gui_helpers.h
+├── client.c
+├── database.c
+├── database.db
+├── database.h
+├── Makefile
 ├── model
 │   ├── message.c
 │   ├── message.h
-│   ├── user.c
-│   └── user.h
-├── README.md
-├── release
-│   └── Makefile
-├── service
-│   ├── auth.c
-│   └── auth.h
-└── tmp
-    ├── client-gui.c
-    ├── client_gui_tmp.c
-    ├── gui.c
-    └── switch.c
+│   └── message.o
+├── seed
+│   ├── run_seed.c
+│   ├── seed
+│   └── seed.c
+├── server.c
+├── wordle.glade
+└── wordle.glade~
 ```
 
-**To run**
-```sh
-cd release
+This project depends on the following libraries and tools:
+
+- **libgtk-3-dev**: Development files for GTK+ 3, used for building the graphical user interface.
+- **sqlite3**: Command-line tool for interacting with SQLite databases.
+- **libsqlite3-dev**: Development library to link C applications with SQLite.
+- **glade**: Tool for designing GTK GUIs in a visual way.
+
+### Installing Dependencies
+
+To install the required libraries, run the following commands:
+
+```bash
+sudo apt-get install sqlite3 libsqlite3-dev libgtk-3-dev glade
+```
+
+To open an interactive shell for working with the database.db SQLite database:
+
+```bash
+sqlite3 database.db
+```
+
+To compile C programs that use SQLite by linking the sqlite3 library:
+```bash
+gcc -o seed seed.c -lsqlite3
+```
+
+> When you run the seed program, it will automatically create the database.db file and populate it with initial sample data. Therefore, if you delete the database.db file, you can simply run `./seed` again to regenerate the database with the sample data.
+
+To open glade, run:
+```bash
+glade wordle.glade
+```
+
+To run app, go to `./src` then run:
+```bash
 make
 ```
 
-Compile GUI:
-```c
-gcc gui.c -o gui `pkg-config --cflags --libs gtk4`
-```
-
-`pkg-config --cflags --libs gtk4`:
-- `pkg-config`: Dùng để tìm kiếm và lấy các thông tin cần thiết về thư viện GTK (các thông tin cờ biên dịch và đường dẫn thư viện).
-- `--cflags`: Lấy các cờ biên dịch cần thiết.
-- `--libs`: Lấy các đường dẫn liên kết tới các thư viện cần thiết cho GTK.
-gtk4: Phiên bản của GTK mà bạn đang sử dụng.
-
-```sh
-+----------------------- Window (vbox) ----------------------+
-|                     Wordle Game GUI                        |
-|                                                            |
-| +-------------- hbox_main (Horizontal Box) ---------------+|
-| |                                                         ||
-| | +--- VBox (You) ---+   +--- VBox (Opponent) ---+        ||
-| | |                  |   |                       |        ||
-| | |  Label: "YOU"    |   |   Label: "OPPONENT"   |        ||
-| | | +--------------+ |   |   +---------------+   |        ||
-| | | | 6x5 Grid     | |   |   | 6x5 Grid      |   |        ||
-| | | +--------------+ |   |   +---------------+   |        ||
-| | +------------------+   +-----------------------+        ||
-| +---------------------------------------------------------+|
-|                                                            |
-| +------------ Submit Box (Horizontal Box) --------------+  |
-| | Entry Field                 [Submit Button]           |  |
-| +-------------------------------------------------------+  |
-+------------------------------------------------------------+
-```
+Then, run `./server` and `./client`

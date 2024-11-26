@@ -1,0 +1,22 @@
+# Ignore object files
+*.o
+
+# Ignore executable files
+server
+client
+
+# Ignore backup files created by editors (e.g., vim, emacs)
+*~
+*.bak
+*.swp
+
+# Ignore GTK-generated files
+*.glade~
+
+# Ignore log and temporary files
+*.log
+*.tmp
+
+# Ignore compiled code and build artifacts
+build/
+bin/
