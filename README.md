@@ -13,15 +13,13 @@ This is a project for the network programming practice course.
 ├── Makefile
 ├── model
 │   ├── message.c
-│   ├── message.h
-│   └── message.o
+│   └── message.h
 ├── seed
 │   ├── run_seed.c
 │   ├── seed
 │   └── seed.c
 ├── server.c
 ├── wordle.glade
-└── wordle.glade~
 ```
 
 This project depends on the following libraries and tools:
