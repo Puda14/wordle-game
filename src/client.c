@@ -12,6 +12,85 @@ GtkBuilder *builder;
 GtkWidget *window;
 GtkStack *stack;
 
+void on_GoToSignup_clicked(GtkButton *button, gpointer user_data) {
+  GtkStack *stack = GTK_STACK(user_data);
+  gtk_stack_set_visible_child_name(stack, "signup");
+}
+
+void on_GoToLogin_clicked(GtkButton *button, gpointer user_data) {
+  GtkStack *stack = GTK_STACK(user_data);
+  gtk_stack_set_visible_child_name(stack, "login");
+}
+
+void on_LoginSubmit_clicked(GtkButton *button, gpointer user_data) {
+  GtkStack *stack = GTK_STACK(user_data);
+  gtk_stack_set_visible_child_name(stack, "homepage");
+}
+
+void on_PlayGame_clicked(GtkButton *button, gpointer user_data) {
+  GtkStack *stack = GTK_STACK(user_data);
+  gtk_stack_set_visible_child_name(stack, "game");
+}
+
+void on_BackToHome_clicked(GtkButton *button, gpointer user_data) {
+  GtkStack *stack = GTK_STACK(user_data);
+  gtk_stack_set_visible_child_name(stack, "homepage");
+}
+
+void on_GoToHistory_clicked(GtkButton *button, gpointer user_data) {
+  GtkStack *stack = GTK_STACK(user_data);
+  gtk_stack_set_visible_child_name(stack, "history");
+}
+
+void on_Logout_clicked(GtkButton *button, gpointer user_data) {
+  GtkStack *stack = GTK_STACK(user_data);
+  gtk_stack_set_visible_child_name(stack, "login");
+}
+
+void set_signal_connect(){
+  GtkWidget *button;
+
+  button = GTK_WIDGET(gtk_builder_get_object(builder, "GoToSignup"));
+  if (button) {
+    g_signal_connect(button, "clicked", G_CALLBACK(on_GoToSignup_clicked), stack);
+  }
+
+  button = GTK_WIDGET(gtk_builder_get_object(builder, "GoToLogin"));
+  if (button) {
+    g_signal_connect(button, "clicked", G_CALLBACK(on_GoToLogin_clicked), stack);
+  }
+
+  button = GTK_WIDGET(gtk_builder_get_object(builder, "LoginSubmit"));
+  if (button) {
+    g_signal_connect(button, "clicked", G_CALLBACK(on_LoginSubmit_clicked), stack);
+  }
+
+  button = GTK_WIDGET(gtk_builder_get_object(builder, "PlayGame"));
+  if (button) {
+    g_signal_connect(button, "clicked", G_CALLBACK(on_PlayGame_clicked), stack);
+  }
+
+  button = GTK_WIDGET(gtk_builder_get_object(builder, "BackToHome1"));
+  if (button) {
+    g_signal_connect(button, "clicked", G_CALLBACK(on_BackToHome_clicked), stack);
+  }
+
+  button = GTK_WIDGET(gtk_builder_get_object(builder, "BackToHome2"));
+  if (button) {
+    g_signal_connect(button, "clicked", G_CALLBACK(on_BackToHome_clicked), stack);
+  }
+
+  button = GTK_WIDGET(gtk_builder_get_object(builder, "GoToHistory"));
+  if (button) {
+    g_signal_connect(button, "clicked", G_CALLBACK(on_GoToHistory_clicked), stack);
+  }
+
+  button = GTK_WIDGET(gtk_builder_get_object(builder, "Logout"));
+  if (button) {
+    g_signal_connect(button, "clicked", G_CALLBACK(on_Logout_clicked), stack);
+  }
+}
+
 // Function to send a message to the server
 int send_message(int sock, const char *message) {
   ssize_t bytes_sent = send(sock, message, strlen(message), 0);
@@ -47,6 +126,14 @@ int main(int argc, char *argv[]) {
     g_printerr("Failed to get main_window from Glade file\n");
     return 1;
   }
+
+  stack = GTK_STACK(gtk_builder_get_object(builder, "stack"));
+  if (!stack) {
+    g_printerr("Failed to get stack from Glade file\n");
+    return 1;
+  }
+
+  set_signal_connect();
 
   gtk_widget_show_all(window);
 
