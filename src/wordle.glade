@@ -5,21 +5,271 @@
   <object class="GtkWindow" id="main_window">
     <property name="can-focus">False</property>
     <child>
-      <object class="GtkFixed">
+      <object class="GtkStack" id="stack">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <child>
-          <object class="GtkButton">
-            <property name="label" translatable="yes">button</property>
-            <property name="width-request">100</property>
-            <property name="height-request">80</property>
+          <object class="GtkFixed" id="login">
             <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="receives-default">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkButton" id="GoToSignup">
+                <property name="label" translatable="yes">Go to signup</property>
+                <property name="width-request">136</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="on_GoToSignup_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="x">622</property>
+                <property name="y">298</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="LoginSubmit">
+                <property name="label" translatable="yes">Submit</property>
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="on_LoginSubmit_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="x">624</property>
+                <property name="y">196</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="LoginLabel">
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Login</property>
+              </object>
+              <packing>
+                <property name="x">623</property>
+                <property name="y">97</property>
+              </packing>
+            </child>
           </object>
           <packing>
-            <property name="x">173</property>
-            <property name="y">82</property>
+            <property name="name">login</property>
+            <property name="title" translatable="yes">login</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkFixed" id="signup">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkButton" id="GoToLogin">
+                <property name="label" translatable="yes">Go to login</property>
+                <property name="width-request">116</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="on_GoToLogin_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="x">652</property>
+                <property name="y">367</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="SignupLabel">
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Sign up</property>
+              </object>
+              <packing>
+                <property name="x">642</property>
+                <property name="y">220</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="name">signup</property>
+            <property name="title" translatable="yes">signup</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkFixed" id="homepage">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkButton" id="PlayGame">
+                <property name="label" translatable="yes">Play game</property>
+                <property name="width-request">101</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="on_PlayGame_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="x">751</property>
+                <property name="y">336</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="HomepageLabel">
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Home page</property>
+              </object>
+              <packing>
+                <property name="x">750</property>
+                <property name="y">247</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="GoToHistory">
+                <property name="label" translatable="yes">History</property>
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="on_GoToHistory_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="x">750</property>
+                <property name="y">432</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="Logout">
+                <property name="label" translatable="yes">Logout</property>
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="on_Logout_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="x">751</property>
+                <property name="y">527</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="name">homepage</property>
+            <property name="title" translatable="yes">homepage</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkFixed" id="game">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkButton" id="BackToHome1">
+                <property name="label" translatable="yes">Back to Home</property>
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="on_BackToHome_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="x">689</property>
+                <property name="y">268</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="GameLabel">
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Game</property>
+              </object>
+              <packing>
+                <property name="x">689</property>
+                <property name="y">165</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="name">game</property>
+            <property name="title" translatable="yes">game</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkFixed" id="history">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkButton" id="BackToHome2">
+                <property name="label" translatable="yes">Back to Home</property>
+                <property name="width-request">127</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <signal name="clicked" handler="on_BackToHome_clicked" swapped="no"/>
+              </object>
+              <packing>
+                <property name="x">484</property>
+                <property name="y">312</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="HistoryLebal">
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">History</property>
+              </object>
+              <packing>
+                <property name="x">484</property>
+                <property name="y">228</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="name">history</property>
+            <property name="title" translatable="yes">history</property>
+            <property name="position">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkFixed" id="Nope">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkButton">
+                <property name="label" translatable="yes">Button</property>
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+              </object>
+              <packing>
+                <property name="x">1400</property>
+                <property name="y">800</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="name">page0</property>
+            <property name="title" translatable="yes">page0</property>
+            <property name="position">5</property>
           </packing>
         </child>
       </object>
