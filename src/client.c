@@ -111,6 +111,23 @@ int receive_message(int sock, char *buffer, size_t buffer_size) {
   return 0;
 }
 
+
+static void apply_css(GtkWidget *widget) {
+    GtkCssProvider *provider = gtk_css_provider_new();
+
+    // Load CSS file
+    if (!gtk_css_provider_load_from_path(provider, "style.css", NULL)) {
+        g_printerr("Failed to load CSS file\n");
+        return;
+    }
+
+    // Apply CSS to the screen
+    GdkScreen *screen = gdk_screen_get_default();
+    gtk_style_context_add_provider_for_screen(screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
+
+    g_object_unref(provider);
+}
+
 int main(int argc, char *argv[]) {
 
   gtk_init(&argc, &argv);
@@ -120,7 +137,7 @@ int main(int argc, char *argv[]) {
     g_printerr("Failed to load Glade file\n");
     return 1;
   }
-
+  
   window = GTK_WIDGET(gtk_builder_get_object(builder, "main_window"));
   if (!window) {
     g_printerr("Failed to get main_window from Glade file\n");
@@ -132,6 +149,9 @@ int main(int argc, char *argv[]) {
     g_printerr("Failed to get stack from Glade file\n");
     return 1;
   }
+  
+      // Apply CSS globally
+    apply_css(window);
 
   set_signal_connect();
 
