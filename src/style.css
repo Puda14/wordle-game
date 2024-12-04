@@ -30,4 +30,12 @@
 .button:hover {
     background-color: #727070; 
   }
-  
+.button-online{
+  background-color: #8f8d8d; 
+  color: rgb(0, 0, 0); 
+
+  border: 1px solid black;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.1s ease, background-color 0.3s ease; 
+}
