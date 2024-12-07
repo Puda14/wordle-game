@@ -80,7 +80,57 @@ void handle_message(int client_sock, Message *message) {
     }
 
     send(client_sock, message, sizeof(Message), 0);
-  }
+  } else if (message->message_type == LOGIN_REQUEST) {
+    char username[50], password[50];
+    sscanf(message->payload, "%49[^|]|%49s", username, password);
+    int login_status = authenticate_user(db, username, password);
+
+    if (login_status == 1) {
+      int update_status = update_user_online(db, username);
+      if (update_status != SQLITE_DONE) {
+        message->status = INTERNAL_SERVER_ERROR;
+        strcpy(message->payload, "Failed to update user status");
+      } else {
+        message->status = SUCCESS;
+        strcpy(message->payload, "Login successful");
+      }
+    } else if (login_status == 0) {
+      message->status = UNAUTHORIZED;
+      strcpy(message->payload, "Invalid username or password");
+    } else {
+      message->status = INTERNAL_SERVER_ERROR;
+      strcpy(message->payload, "Login failed");
+    }
+
+    send(client_sock, message, sizeof(Message), 0);
+  } else if (message->message_type == LOGOUT_REQUEST) {
+    char username[50], password[50];
+    sscanf(message->payload, "%49[^|]|%49s", username, password);
+
+    printf("Logout request from user: %s\n", username);
+
+    int auth_status = authenticate_user(db, username, password);
+    if (auth_status == 1) {
+        int update_status = update_user_offline(db, username);
+        if (update_status == SQLITE_DONE || update_status == SQLITE_OK) {
+            message->status = SUCCESS;
+            strcpy(message->payload, "Logout successful");
+        } else {
+            message->status = INTERNAL_SERVER_ERROR;
+            strcpy(message->payload, "Failed to update user status");
+        }
+    } else if (auth_status == 0) {
+        message->status = UNAUTHORIZED;
+        strcpy(message->payload, "Invalid username or password");
+    } else {
+        message->status = INTERNAL_SERVER_ERROR;
+        strcpy(message->payload, "Logout failed");
+    }
+
+    send(client_sock, message, sizeof(Message), 0);
+}
+
+
 }
 
 int initialize_server(int *server_sock, struct sockaddr_in *server_addr) {
