@@ -4,7 +4,9 @@
 #include <stdint.h>
 #define BUFFER_SIZE 1024
 
-enum MessageType { SIGNUP_REQUEST = 0, LOGIN_REQUEST = 1, LOGOUT_REQUEST = 2 };
+enum MessageType { SIGNUP_REQUEST = 0, LOGIN_REQUEST = 1, LOGOUT_REQUEST = 2, 
+                    GAME_START = 5, GAME_GUESS = 6, GAME_TURN = 7, GAME_END = 8,
+                    GAME_GET_TARGET = 9 };
 
 enum StatusCode {
   // 2xx: Successful responses
