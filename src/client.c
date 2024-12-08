@@ -19,6 +19,14 @@
 // Message queue structure
 #define MAX_QUEUE_SIZE 100
 
+typedef struct {
+  int id;
+  char username[50];
+  char password[50];
+  int score;
+  int is_online;
+} User;
+
 typedef struct
 {
     Message messages[MAX_QUEUE_SIZE];
@@ -56,6 +64,7 @@ static GtkWidget *game_status_label;
 static GtkWidget *GameBoard;
 static GtkEntry *word_entry;
 static GtkWidget *submit_button;
+// static GtkWidget *user_list_box;
 
 void show_error_dialog(const char *message)
 {
@@ -213,7 +222,7 @@ void handle_game_turn_response(Message *msg) {
 
         // Nếu trò chơi đã kết thúc
         if (turn == 0) {
-            gtk_label_set_text(GTK_LABEL(game_status_label), "Game over!");
+            show_dialog("Game over!");
             gtk_widget_set_sensitive(word_entry, FALSE);
             gtk_widget_set_sensitive(submit_button, FALSE);
             return;
@@ -253,10 +262,10 @@ void handle_game_guess_response(Message *msg)
             return;
         }
         // Hiển thị thông báo chiến thắng cho người chơi
-        if (current_player == player_number) {
+        if (current_player == player_num) {
             show_dialog("You Win! Congratulations!");
         } else {
-            show_dialog("Player X Wins! Better luck next time.");
+            show_dialog("You lose! Better luck next time.");
         }
     } else if (strncmp(msg->payload, "DRAW", 4) == 0) {
         // Nếu là DRAW, có 2 phần: DRAW|p1_attempts|p2_attempts
@@ -334,6 +343,204 @@ void handle_game_get_target_response(Message *msg)
         g_print("Failed to get target word\n");
     }
 }
+
+// Hàm phân tích và lưu danh sách người dùng
+int parse_user_list(char *payload, User *user_list, int max_users) {
+    char *line = strtok(payload, "\n");  // Tách theo từng dòng
+    int user_count = 0;
+
+    while (line != NULL && user_count < max_users) {
+        // Giả sử dữ liệu được phân tách bằng dấu "|" trong payload
+        int id, score, is_online;
+        char username[50], password[50];
+
+        // Đọc thông tin người dùng từ mỗi dòng (sử dụng sscanf để phân tích chuỗi)
+        if (sscanf(line, "ID: %d, Username: %[^,], Score: %d, Online: %d",
+                   &id, username, password, &score, &is_online) == 4) {
+            // Lưu thông tin vào trong danh sách người dùng
+            user_list[user_count].id = id;
+            strcpy(user_list[user_count].username, username);
+            user_list[user_count].score = score;
+            user_list[user_count].is_online = is_online;
+            user_count++;
+        }
+
+        // Tiếp tục với dòng tiếp theo
+        line = strtok(NULL, "\n");
+    }
+
+    return user_count;  // Trả về số lượng người dùng đã phân tích
+}
+
+void update_user_list_box(User *user_list, int user_count) {
+    GtkListBox *list_box = GTK_LIST_BOX(gtk_builder_get_object(builder, "user_list_box"));
+    if (!list_box) {
+        g_print("Cannot find user list box\n");
+        return;
+    }
+
+    // Remove existing rows
+    GtkListBoxRow *row;
+    while ((row = gtk_list_box_get_row_at_index(list_box, 0)) != NULL) {
+        gtk_container_remove(GTK_CONTAINER(list_box), GTK_WIDGET(row));
+    }
+
+    // Add new rows
+    for (int i = 0; i < user_count; i++) {
+        // Create row container
+        GtkWidget *row_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+        gtk_widget_set_margin_start(row_box, 5);
+        gtk_widget_set_margin_end(row_box, 5);
+        gtk_widget_set_margin_top(row_box, 5);
+        gtk_widget_set_margin_bottom(row_box, 5);
+
+        // Create labels for user info
+        char user_info[256];
+        snprintf(user_info, sizeof(user_info), "%s (Score: %d) %s", 
+                user_list[i].username, 
+                user_list[i].score,
+                user_list[i].is_online ? "Online" : "Offline");
+        
+        GtkWidget *label = gtk_label_new(user_info);
+        gtk_widget_set_halign(label, GTK_ALIGN_START);
+        gtk_box_pack_start(GTK_BOX(row_box), label, TRUE, TRUE, 0);
+
+        // Create row and add container
+        GtkWidget *row = gtk_list_box_row_new();
+        gtk_container_add(GTK_CONTAINER(row), row_box);
+        gtk_list_box_insert(list_box, row, -1);
+        
+        // Show all widgets
+        gtk_widget_show_all(row);
+    }
+
+    // Show the list box
+    gtk_widget_show_all(GTK_WIDGET(list_box));
+}
+
+void handle_list_user(Message *msg)
+{   if(msg->status != SUCCESS)
+    {
+        g_print("Error in list user response\n");
+        return;
+    }
+    User user_list[10];
+    int user_count = parse_user_list(msg->payload, user_list, 10);
+
+    // Hiển thị danh sách người dùng đã phân tích
+    printf("Received %d users:\n", user_count);
+    for (int i = 0; i < user_count; i++) {
+        printf("ID: %d, Username: %s, Score: %d, Online: %d\n",
+               user_list[i].id, user_list[i].username, user_list[i].score, user_list[i].is_online);
+    }
+    printf("Create user list box\n");
+    GtkWidget *user_list_box = GTK_WIDGET(gtk_builder_get_object(builder, "user_list_box"));
+    if (user_list_box == NULL)
+    {
+        g_print("Cannot find user list box\n");
+        return;
+    }
+    printf("Build user list box\n");
+    update_user_list_box(user_list, user_count);
+}
+
+void handle_challange_request(Message *msg)
+{
+   // Extract challenger name
+    char challenger[50], challenged[50];
+    sscanf(msg->payload, "CHALLANGE_REQUEST|%[^|]|%s", challenger, challenged);
+    
+    // Show dialog only if we're the challenged player
+    if (strcmp(challenged, client_name) == 0) {
+        GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(window),
+                                                 GTK_DIALOG_MODAL,
+                                                 GTK_MESSAGE_QUESTION,
+                                                 GTK_BUTTONS_YES_NO,
+                                                 "Game challenge from %s. Accept?",
+                                                 challenger);
+
+        int response = gtk_dialog_run(GTK_DIALOG(dialog));
+        gtk_widget_destroy(dialog);
+
+        // Send response
+        Message resp;
+        resp.message_type = CHALLANGE_RESPONSE;
+        if (response == GTK_RESPONSE_YES) {
+            sprintf(resp.payload, "CHALLANGE_RESPONSE|%s|%s|ACCEPT", challenger, challenged);
+        } else {
+            sprintf(resp.payload, "CHALLANGE_RESPONSE|%s|%s|REJECT", challenger, challenged);
+        }
+        queue_push(&send_queue, &resp);
+    }
+}
+void handle_challange_response(Message *msg)
+{
+    char challenger[50], challenged[50], response[10];
+    sscanf(msg->payload, "CHALLANGE_RESPONSE|%[^|]|%[^|]|%s", 
+           challenger, challenged, response);
+
+    if (strcmp(response, "ACCEPT") == 0) {
+        // Start game if we're the challenger
+        if (strcmp(challenger, client_name) == 0) {
+            Message game_msg;
+            game_msg.message_type = GAME_START;
+            sprintf(game_msg.payload, "%s|%s", challenger, challenged);
+            
+            queue_push(&send_queue, &game_msg);
+        }else{
+            Message game_msg;
+            game_msg.message_type = GAME_START;
+            sprintf(game_msg.payload, "%s|%s", challenged, challenger);
+            
+            queue_push(&send_queue, &game_msg);
+        }
+    } else {
+        if (strcmp(challenger, client_name) == 0) {
+            show_error_dialog("Challenge rejected");
+        }
+    }
+}
+void on_send_challenge_clicked(GtkButton *button, gpointer user_data)
+{   
+    printf("Send challenge clicked\n");
+    GtkStack *stack = GTK_STACK(user_data);
+   // Get list box widget
+    GtkListBox *list_box = GTK_LIST_BOX(gtk_builder_get_object(builder, "user_list_box"));
+    if (!list_box) {
+        g_print("Cannot find user list box\n");
+        return;
+    }
+
+    // Get selected row
+    GtkListBoxRow *selected_row = gtk_list_box_get_selected_row(list_box);
+    if (!selected_row) {
+        show_error_dialog("Please select an opponent first");
+        return;
+    }
+
+    // Get label from row box
+    GtkWidget *box = gtk_bin_get_child(GTK_BIN(selected_row));
+    GtkWidget *label = gtk_container_get_children(GTK_CONTAINER(box))->data;
+    const gchar *label_text = gtk_label_get_text(GTK_LABEL(label));
+
+    // Extract username from label text (format: "username (Score: X) status")
+    char opponent_name[50] = {0};
+    sscanf(label_text, "%[^ (]", opponent_name);
+
+    if (strcmp(opponent_name, client_name) == 0) {
+        show_error_dialog("Cannot challenge yourself!");
+        return;
+    }
+
+    // Send challenge request
+    Message msg;
+    msg.message_type = CHALLANGE_REQUEST;
+    sprintf(msg.payload, "CHALLANGE_REQUEST|%s|%s", client_name, opponent_name);
+
+    queue_push(&send_queue, &msg);
+    char *dialog_message = g_strdup_printf("Challenge sent to %s", opponent_name);
+    show_dialog(dialog_message);
+}
 // UI thread network response handler
 gboolean process_network_response(gpointer data)
 {
@@ -354,51 +561,21 @@ gboolean process_network_response(gpointer data)
         case GAME_GET_TARGET:
             handle_game_get_target_response(&msg);
             break;
-        
+        case LIST_USER:
+            // Handle user list response
+            handle_list_user(&msg);
+            break;
+        case CHALLANGE_REQUEST:
+            handle_challange_request(&msg);
+            break;
+        case CHALLANGE_RESPONSE:
+            handle_challange_response(&msg);
+            break;
         }
     }
     return G_SOURCE_REMOVE;
 }
 
-// Network thread function
-// void *network_thread_func(void *arg)
-// {
-//     int sockfd = init_tcp_socket("127.0.0.1", 8080); // Kết nối tới máy chủ với IP và cổng tương ứng
-//     if (sockfd < 0)
-//     {
-//         return NULL; // Nếu kết nối thất bại, thoát khỏi luồng
-//     }
-//     printf("Network thread with %d\n", sockfd);
-//     while (network_running)
-//     {
-//         // Check for messages to send
-//         Message send_msg;
-//         if (queue_pop(&send_queue, &send_msg) == 0)
-//         {
-//             if (send_message(sockfd, &send_msg) < 0)
-//             {
-//                 // Handle send error
-//                 continue;
-//             }
-
-//             // Wait for response
-//             Message recv_msg;
-//             if (receive_message(sockfd, &recv_msg) == 0)
-//             {
-//                 queue_push(&receive_queue, &recv_msg);
-
-//                 // Signal UI update needed
-//                 gdk_threads_add_idle(process_network_response, NULL);
-//             }
-//         }
-
-
-//         usleep(10000); // Sleep to prevent busy waiting
-//     }
-//     close(sockfd); // Đóng kết nối khi luồng kết thúc
-
-//     return NULL;
-// }
 
 void *network_thread_func(void *arg) {
     int sockfd = init_tcp_socket("127.0.0.1", 8080);
@@ -584,6 +761,10 @@ void on_LoginSubmit_clicked(GtkButton *button, gpointer user_data)
             {
                 // Switch to homepage
                 if (stack) {
+                    Message message;
+                    message.message_type = LIST_USER;
+                    sprintf(message.payload, "%s", "");
+                    queue_push(&send_queue, &message);
                     gtk_stack_set_visible_child_name(stack, "homepage");
                 } else {
                     g_print("Stack widget is null\n");
@@ -775,48 +956,9 @@ void on_PlayGame_clicked(GtkButton *button, gpointer user_data)
     message.status = 0;          // No status for initial request
      // Payload chứa tên player và tên đối thủ
     snprintf(message.payload, sizeof(message.payload), "%s|%s", client_name, opponent_name);
-
-
     // Push game start request to send queue
     queue_push(&send_queue, &message);
 
-    // // Show waiting dialog
-    // GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(window),
-    //                                            GTK_DIALOG_MODAL,
-    //                                            GTK_MESSAGE_INFO,
-    //                                            GTK_BUTTONS_NONE,
-    //                                            "Connecting to game...");
-    // gtk_widget_show_all(dialog);
-
-    // // Wait for response with timeout
-    // int timeout = 0;
-    // Message response;
-    // while (timeout < 10)
-    // { // Try for 1 second
-    //     if (queue_pop(&receive_queue, &response) == 0)
-    //     {
-    //         if (response.status == SUCCESS)
-    //         {
-    //             // Parse game session info
-    //             if (sscanf(response.payload, "%d", &game_session_id) == 1)
-    //             {
-    //                 printf("Game session started: id=%d\n",
-    //                        game_session_id);
-    //                 init_game_state(game_session_id);
-    //                 gtk_stack_set_visible_child_name(stack, "game");
-    //                 gtk_widget_destroy(dialog);
-    //                 return;
-    //             }
-    //         }
-    //         break;
-    //     }
-    //     usleep(100000); // Wait 100ms
-    //     timeout++;
-    // }
-
-    // If we get here, connection failed
-    // gtk_widget_destroy(dialog);
-    // show_error_dialog("Failed to connect to game server");
 }
 
 void on_BackToHome_clicked(GtkButton *button, gpointer user_data)
@@ -863,6 +1005,11 @@ void set_signal_connect()
     if (button)
     {
         g_signal_connect(button, "clicked", G_CALLBACK(on_PlayGame_clicked), stack);
+    }
+    button = GTK_WIDGET(gtk_builder_get_object(builder, "send_challenge_button"));
+    if (button)
+    {
+        g_signal_connect(button, "clicked", G_CALLBACK(on_send_challenge_clicked), stack);
     }
 
     button = GTK_WIDGET(gtk_builder_get_object(builder, "BackToHome1"));
