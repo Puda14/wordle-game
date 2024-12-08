@@ -16,43 +16,93 @@
               <object class="GtkButton" id="GoToSignup">
                 <property name="label" translatable="yes">Go to signup</property>
                 <property name="width-request">136</property>
-                <property name="height-request">80</property>
+                <property name="height-request">44</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <signal name="clicked" handler="on_GoToSignup_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">622</property>
-                <property name="y">298</property>
+                <property name="x">741</property>
+                <property name="y">434</property>
               </packing>
             </child>
             <child>
               <object class="GtkButton" id="LoginSubmit">
                 <property name="label" translatable="yes">Submit</property>
                 <property name="width-request">100</property>
-                <property name="height-request">80</property>
+                <property name="height-request">51</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <signal name="clicked" handler="on_LoginSubmit_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">624</property>
-                <property name="y">196</property>
+                <property name="x">758</property>
+                <property name="y">370</property>
               </packing>
             </child>
             <child>
               <object class="GtkLabel" id="LoginLabel">
                 <property name="width-request">100</property>
-                <property name="height-request">80</property>
+                <property name="height-request">60</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">Login</property>
               </object>
               <packing>
-                <property name="x">623</property>
-                <property name="y">97</property>
+                <property name="x">746</property>
+                <property name="y">71</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="LoginUsernameEntry">
+                <property name="width-request">220</property>
+                <property name="height-request">60</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+              </object>
+              <packing>
+                <property name="x">692</property>
+                <property name="y">191</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="LoginPasswordEntry">
+                <property name="width-request">220</property>
+                <property name="height-request">60</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+              </object>
+              <packing>
+                <property name="x">693</property>
+                <property name="y">291</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="width-request">180</property>
+                <property name="height-request">40</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Username</property>
+              </object>
+              <packing>
+                <property name="x">641</property>
+                <property name="y">150</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="width-request">180</property>
+                <property name="height-request">40</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Password</property>
+              </object>
+              <packing>
+                <property name="x">636</property>
+                <property name="y">259</property>
               </packing>
             </child>
           </object>
@@ -107,7 +157,7 @@
             <child>
               <object class="GtkButton" id="PlayGame">
                 <property name="label" translatable="yes">Play game</property>
-                <property name="width-request">101</property>
+                <property name="width-request">111</property>
                 <property name="height-request">80</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -115,8 +165,21 @@
                 <signal name="clicked" handler="on_PlayGame_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">751</property>
-                <property name="y">336</property>
+                <property name="x">706</property>
+                <property name="y">247</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="opponent_name_entry">
+                <property name="width-request">200</property>
+                <property name="height-request">40</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="placeholder-text">Enter opponent name</property>
+              </object>
+              <packing>
+                <property name="x">656</property>
+                <property name="y">177</property>
               </packing>
             </child>
             <child>
@@ -128,8 +191,8 @@
                 <property name="label" translatable="yes">Home page</property>
               </object>
               <packing>
-                <property name="x">750</property>
-                <property name="y">247</property>
+                <property name="x">698</property>
+                <property name="y">38</property>
               </packing>
             </child>
             <child>
@@ -143,8 +206,8 @@
                 <signal name="clicked" handler="on_GoToHistory_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">750</property>
-                <property name="y">432</property>
+                <property name="x">708</property>
+                <property name="y">338</property>
               </packing>
             </child>
             <child>
@@ -158,8 +221,8 @@
                 <signal name="clicked" handler="on_Logout_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">751</property>
-                <property name="y">527</property>
+                <property name="x">709</property>
+                <property name="y">434</property>
               </packing>
             </child>
           </object>
@@ -203,67 +266,33 @@
                 <property name="column-spacing">5</property>
                 <property name="row-homogeneous">True</property>
                 <property name="column-homogeneous">True</property>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
-                  <child><placeholder/></child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
               </object>
               <packing>
                 <property name="x">560</property>
