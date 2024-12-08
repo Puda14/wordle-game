@@ -62,7 +62,8 @@ typedef struct
 
 PlayerInfo player_list[MAX_PLAYERS]; // Mảng chứa thông tin các player
 int player_count = 0;                // Số lượng người chơi hiện tại
-
+User users[10]; // Array to hold users
+int size = 0;
 void seed_users(User users[], int *size)
 {
   users[0] = (User){.id = 1, .username = "player1", .password = "pass1", .score = 100, .is_online = 0};
@@ -309,6 +310,43 @@ void handle_message(int client_sock, Message *message)
 
         // Send the message to the client
         send(client_sock, message, sizeof(Message), 0);
+    }
+  }
+  if(message->message_type == CHALLANGE_REQUEST){
+    char player1[50], player2[50];
+    sscanf(message->payload, "CHALLANGE_REQUEST|%49[^|]|%49s", player1, player2);
+    int player1_sock = get_player_sock(player1);
+    int player2_sock = get_player_sock(player2);
+    if(player1_sock == -1 || player2_sock == -1){
+      message->status = BAD_REQUEST;
+      strcpy(message->payload, "Player not found");
+      send(client_sock, message, sizeof(Message), 0);
+      return;
+    }
+    message->status = SUCCESS;
+    send(player1_sock, message, sizeof(Message), 0);
+    send(player2_sock, message, sizeof(Message), 0);
+  }
+  if(message->message_type == CHALLANGE_RESPONSE){
+    char player1[50], player2[50], response[50];
+    sscanf(message->payload, "CHALLANGE_RESPONSE|%49[^|]|%49[^|]|%49s", player1, player2, response);
+    int player1_sock = get_player_sock(player1);
+    int player2_sock = get_player_sock(player2);
+    if(player1_sock == -1 || player2_sock == -1){
+      message->status = BAD_REQUEST;
+      strcpy(message->payload, "Player not found");
+      send(client_sock, message, sizeof(Message), 0);
+      return;
+    }
+    if(strcmp(response, "ACCEPT") == 0){
+      message->status = SUCCESS;
+      send(player1_sock, message, sizeof(Message), 0);
+      
+      send(player2_sock, message, sizeof(Message), 0);
+    }else{
+      message->status = BAD_REQUEST;
+      strcpy(message->payload, "Challange rejected");
+      send(player1_sock, message, sizeof(Message), 0);
     }
   }
   if (message->message_type == GAME_START)
@@ -652,8 +690,7 @@ void init_wordle()
   }
 }
 
-  User users[10]; // Array to hold users
-  int size = 0;
+
 
 int main()
 {
