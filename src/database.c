@@ -268,3 +268,91 @@ int get_game_histories_by_username(sqlite3 *db, const char *username, char *resp
     sqlite3_finalize(stmt);
     return SQLITE_OK;
 }
+
+int authenticate_user(sqlite3 *db, const char *username, const char *password) {
+  sqlite3_stmt *stmt;
+  const char *sql = "SELECT password FROM user WHERE username = ?";
+
+  if (sqlite3_prepare_v2(db, sql, -1, &stmt, NULL) != SQLITE_OK) {
+    fprintf(stderr, "SQL error: %s\n", sqlite3_errmsg(db));
+    return -1;
+  }
+
+  sqlite3_bind_text(stmt, 1, username, -1, SQLITE_STATIC);
+
+  int rc = sqlite3_step(stmt);
+  if (rc == SQLITE_ROW) {
+    const char *stored_password = (const char *)sqlite3_column_text(stmt, 0);
+    if (strcmp(stored_password, password) == 0) {
+      sqlite3_finalize(stmt);
+      return 1;
+    }
+  }
+
+  sqlite3_finalize(stmt);
+  return 0;
+}
+
+int update_user_online(sqlite3 *db, const char *username) {
+  const char *sql = "UPDATE user SET isOnline = 1 WHERE username = ?";
+  sqlite3_stmt *stmt;
+
+  int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+  if (rc != SQLITE_OK) {
+    fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+    return rc;
+  }
+
+  if (username == NULL || strlen(username) == 0) {
+    fprintf(stderr, "Username is NULL or empty.\n");
+    sqlite3_finalize(stmt);
+    return SQLITE_MISUSE;
+  }
+
+  rc = sqlite3_bind_text(stmt, 1, username, -1, SQLITE_STATIC);
+  if (rc != SQLITE_OK) {
+    fprintf(stderr, "Failed to bind parameter: %s\n", sqlite3_errmsg(db));
+    sqlite3_finalize(stmt);
+    return rc;
+  }
+
+  rc = sqlite3_step(stmt);
+  if (rc != SQLITE_DONE) {
+    fprintf(stderr, "Failed to update user status: %s\n", sqlite3_errmsg(db));
+  }
+
+  sqlite3_finalize(stmt);
+  return rc;
+}
+
+int update_user_offline(sqlite3 *db, const char *username) {
+  const char *sql = "UPDATE user SET isOnline = 0 WHERE username = ?";
+  sqlite3_stmt *stmt;
+
+  int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+  if (rc != SQLITE_OK) {
+    fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+    return rc;
+  }
+
+  if (username == NULL || strlen(username) == 0) {
+    fprintf(stderr, "Username is NULL or empty.\n");
+    sqlite3_finalize(stmt);
+    return SQLITE_MISUSE;
+  }
+
+  rc = sqlite3_bind_text(stmt, 1, username, -1, SQLITE_STATIC);
+  if (rc != SQLITE_OK) {
+    fprintf(stderr, "Failed to bind parameter: %s\n", sqlite3_errmsg(db));
+    sqlite3_finalize(stmt);
+    return rc;
+  }
+
+  rc = sqlite3_step(stmt);
+  if (rc != SQLITE_DONE) {
+    fprintf(stderr, "Failed to update user status: %s\n", sqlite3_errmsg(db));
+  }
+
+  sqlite3_finalize(stmt);
+  return rc;
+}

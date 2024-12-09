@@ -7,7 +7,8 @@
 #include <stdlib.h>
 
 #define USER_TABLE "user"
-
+#define MAX_USERNAME_LEN 50
+#define MAX_PASSWORD_LEN 50
 
 typedef struct {
   int id;
@@ -34,4 +35,7 @@ int get_user_by_username(sqlite3 *db, const char *username, User *user);
 
 void handle_db_error(sqlite3 *db, const char *errMsg);
 
+int authenticate_user(sqlite3 *db, const char *username, const char *password);
+
+int update_user_online(sqlite3 *db, const char *username);
 #endif
