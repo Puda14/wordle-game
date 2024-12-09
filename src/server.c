@@ -62,18 +62,6 @@ typedef struct
 
 PlayerInfo player_list[MAX_PLAYERS]; // Mảng chứa thông tin các player
 int player_count = 0;                // Số lượng người chơi hiện tại
-User users[10]; // Array to hold users
-int size = 0;
-void seed_users(User users[], int *size)
-{
-  users[0] = (User){.id = 1, .username = "player1", .password = "pass1", .score = 100, .is_online = 0};
-  users[1] = (User){.id = 2, .username = "player2", .password = "pass2", .score = 150, .is_online = 0};
-  users[2] = (User){.id = 3, .username = "player3", .password = "pass3", .score = 200, .is_online = 0};
-  users[3] = (User){.id = 4, .username = "player4", .password = "pass4", .score = 50, .is_online = 0};
-  users[4] = (User){.id = 5, .username = "player5", .password = "pass5", .score = 300, .is_online = 0};
-  users[5] = (User){.id = 6, .username = "player6", .password = "pass6", .score = 75, .is_online = 0};
-  *size = 6;
-}
 
 int add_player(const char *player_name, int player_sock)
 {
@@ -269,48 +257,90 @@ void handle_message(int client_sock, Message *message)
   if (message->message_type == LOGIN_REQUEST)
   {
     char username[50], password[50];
-    sscanf(message->payload, "%s", username);
-    User *found_user = find_user_by_username(users, size, username);
-    if (found_user != NULL)
-    {
-      found_user->is_online = 1;
-    }
-    message->status = SUCCESS;
-    strcpy(message->payload, "Log in successful");
-    // Thêm player vào danh sách
-    if (add_player(username, client_sock) == 0)
-    {
-      printf("Player %s connected with socket %d\n", username, client_sock);
-    }
-    else
-    {
-      printf("Failed to add player %s\n", username);
-      close(client_sock); // Đóng kết nối nếu không thể thêm player
+    sscanf(message->payload, "%49[^|]|%49s", username, password);
+
+    int login_status = authenticate_user(db, username, password);
+
+    if (login_status == 1) {
+      int update_status = update_user_online(db, username);
+      if (update_status != SQLITE_DONE) {
+        message->status = INTERNAL_SERVER_ERROR;
+        strcpy(message->payload, "Failed to update user status");
+      } else {
+        message->status = SUCCESS;
+        strcpy(message->payload, "Login successful");
+        if (add_player(username, client_sock) == 0)
+        {
+          printf("Player %s connected with socket %d\n", username, client_sock);
+        }
+        else
+        {
+          printf("Failed to add player %s\n", username);
+          close(client_sock);
+        }
+      }
+    } else if (login_status == 0) {
+      message->status = UNAUTHORIZED;
+      strcpy(message->payload, "Invalid username or password");
+    } else {
+      message->status = INTERNAL_SERVER_ERROR;
+      strcpy(message->payload, "Login failed");
     }
     send(client_sock, message, sizeof(Message), 0);
   }
-  if (message->message_type == LIST_USER){
-    char response[2048] = {0};  // Buffer to hold the response
-    char buffer[128];  // Temporary buffer for formatting user data
-
-    // Check if the message type is LIST_USER
-    if (message->message_type == LIST_USER) {
-        // Start forming the response payload
-        for (int i = 0; i < size; i++) {
-            // Format each user's data (e.g., ID, username, score, online status)
-            snprintf(buffer, sizeof(buffer), "ID: %d, Username: %s, Score: %d, Online: %d\n",
-                     users[i].id, users[i].username, users[i].score, users[i].is_online);
-            // Concatenate each user's info to the response
-            strncat(response, buffer, 2048 - strlen(response) - 1);
+  if (message->message_type == LOGOUT_REQUEST) {
+    char username[50], password[50];
+    sscanf(message->payload, "%49[^|]|%49s", username, password);
+    printf("Logout request from user: %s\n", username);
+    int auth_status = authenticate_user(db, username, password);
+    if (auth_status == 1) {
+        int update_status = update_user_offline(db, username);
+        if (update_status == SQLITE_DONE || update_status == SQLITE_OK) {
+            message->status = SUCCESS;
+            strcpy(message->payload, "Logout successful");
+        } else {
+            message->status = INTERNAL_SERVER_ERROR;
+            strcpy(message->payload, "Failed to update user status");
         }
-
-        // Copy the final response to the message payload
-        strcpy(message->payload, response);
-        message->status = SUCCESS;  // Indicate success
-
-        // Send the message to the client
-        send(client_sock, message, sizeof(Message), 0);
+    } else if (auth_status == 0) {
+        message->status = UNAUTHORIZED;
+        strcpy(message->payload, "Invalid username or password");
+    } else {
+        message->status = INTERNAL_SERVER_ERROR;
+        strcpy(message->payload, "Logout failed");
     }
+    send(client_sock, message, sizeof(Message), 0);
+  }
+  if (message->message_type == LIST_USER) {
+    User users[10];
+    int user_count = 0;
+
+    int rc = list_users_online(db, users, &user_count);
+
+    if (rc == SQLITE_OK) {
+      char response[2048] = {0};
+      char buffer[128];
+
+      for (int i = 0; i < user_count; i++) {
+        snprintf(buffer, sizeof(buffer), "ID: %d, Username: %s, Score: %d, Online: %d\n",
+                  users[i].id, users[i].username, users[i].score, users[i].is_online);
+        strncat(response, buffer, 2048 - strlen(response) - 1);
+      }
+
+      if (strlen(response) > 1) {
+        response[strlen(response) - 1] = '\0';
+      }
+      strcpy(message->payload, response);
+      message->status = SUCCESS;
+    } else if (rc == NOT_FOUND) {
+        message->status = NOT_FOUND;
+        strcpy(message->payload, "No online users found.");
+    } else {
+        message->status = INTERNAL_SERVER_ERROR;
+        strcpy(message->payload, "Internal server error occurred.");
+    }
+
+    send(client_sock, message, sizeof(Message), 0);
   }
   if(message->message_type == CHALLANGE_REQUEST){
     char player1[50], player2[50];
@@ -341,7 +371,7 @@ void handle_message(int client_sock, Message *message)
     if(strcmp(response, "ACCEPT") == 0){
       message->status = SUCCESS;
       send(player1_sock, message, sizeof(Message), 0);
-      
+
       send(player2_sock, message, sizeof(Message), 0);
     }else{
       message->status = BAD_REQUEST;
@@ -690,8 +720,6 @@ void init_wordle()
   }
 }
 
-
-
 int main()
 {
   int server_sock, new_sock, client_socks[MAX_CLIENTS] = {0};
@@ -708,7 +736,7 @@ int main()
 
 
   // Seed the users
-  seed_users(users, &size);
+  // seed_users(users, &size);
   init_wordle();
 
   // Set up the signal handler

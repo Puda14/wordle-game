@@ -39,6 +39,7 @@ typedef struct
 
 // Global variables
 char client_name[50];
+char client_password[50];
 
 static MessageQueue send_queue;
 static MessageQueue receive_queue;
@@ -344,20 +345,16 @@ void handle_game_get_target_response(Message *msg)
     }
 }
 
-// Hàm phân tích và lưu danh sách người dùng
 int parse_user_list(char *payload, User *user_list, int max_users) {
     char *line = strtok(payload, "\n");  // Tách theo từng dòng
     int user_count = 0;
 
     while (line != NULL && user_count < max_users) {
-        // Giả sử dữ liệu được phân tách bằng dấu "|" trong payload
         int id, score, is_online;
         char username[50], password[50];
 
-        // Đọc thông tin người dùng từ mỗi dòng (sử dụng sscanf để phân tích chuỗi)
         if (sscanf(line, "ID: %d, Username: %[^,], Score: %d, Online: %d",
-                   &id, username, password, &score, &is_online) == 4) {
-            // Lưu thông tin vào trong danh sách người dùng
+                   &id, username, &score, &is_online) == 4) {
             user_list[user_count].id = id;
             strcpy(user_list[user_count].username, username);
             user_list[user_count].score = score;
@@ -365,11 +362,10 @@ int parse_user_list(char *payload, User *user_list, int max_users) {
             user_count++;
         }
 
-        // Tiếp tục với dòng tiếp theo
         line = strtok(NULL, "\n");
     }
 
-    return user_count;  // Trả về số lượng người dùng đã phân tích
+    return user_count;
 }
 
 void update_user_list_box(User *user_list, int user_count) {
@@ -396,11 +392,11 @@ void update_user_list_box(User *user_list, int user_count) {
 
         // Create labels for user info
         char user_info[256];
-        snprintf(user_info, sizeof(user_info), "%s (Score: %d) %s", 
-                user_list[i].username, 
+        snprintf(user_info, sizeof(user_info), "%s (Score: %d) %s",
+                user_list[i].username,
                 user_list[i].score,
                 user_list[i].is_online ? "Online" : "Offline");
-        
+
         GtkWidget *label = gtk_label_new(user_info);
         gtk_widget_set_halign(label, GTK_ALIGN_START);
         gtk_box_pack_start(GTK_BOX(row_box), label, TRUE, TRUE, 0);
@@ -409,7 +405,7 @@ void update_user_list_box(User *user_list, int user_count) {
         GtkWidget *row = gtk_list_box_row_new();
         gtk_container_add(GTK_CONTAINER(row), row_box);
         gtk_list_box_insert(list_box, row, -1);
-        
+
         // Show all widgets
         gtk_widget_show_all(row);
     }
@@ -449,7 +445,7 @@ void handle_challange_request(Message *msg)
    // Extract challenger name
     char challenger[50], challenged[50];
     sscanf(msg->payload, "CHALLANGE_REQUEST|%[^|]|%s", challenger, challenged);
-    
+
     // Show dialog only if we're the challenged player
     if (strcmp(challenged, client_name) == 0) {
         GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(window),
@@ -476,7 +472,7 @@ void handle_challange_request(Message *msg)
 void handle_challange_response(Message *msg)
 {
     char challenger[50], challenged[50], response[10];
-    sscanf(msg->payload, "CHALLANGE_RESPONSE|%[^|]|%[^|]|%s", 
+    sscanf(msg->payload, "CHALLANGE_RESPONSE|%[^|]|%[^|]|%s",
            challenger, challenged, response);
 
     if (strcmp(response, "ACCEPT") == 0) {
@@ -485,13 +481,13 @@ void handle_challange_response(Message *msg)
             Message game_msg;
             game_msg.message_type = GAME_START;
             sprintf(game_msg.payload, "%s|%s", challenger, challenged);
-            
+
             queue_push(&send_queue, &game_msg);
         }else{
             Message game_msg;
             game_msg.message_type = GAME_START;
             sprintf(game_msg.payload, "%s|%s", challenged, challenger);
-            
+
             queue_push(&send_queue, &game_msg);
         }
     } else {
@@ -501,7 +497,7 @@ void handle_challange_response(Message *msg)
     }
 }
 void on_send_challenge_clicked(GtkButton *button, gpointer user_data)
-{   
+{
     printf("Send challenge clicked\n");
     GtkStack *stack = GTK_STACK(user_data);
    // Get list box widget
@@ -589,7 +585,7 @@ void *network_thread_func(void *arg) {
 
     fd_set read_fds, write_fds;
     struct timeval tv;
-    
+
     while (network_running) {
         FD_ZERO(&read_fds);
         FD_ZERO(&write_fds);
@@ -606,7 +602,7 @@ void *network_thread_func(void *arg) {
         tv.tv_usec = 100000; // 100ms timeout
 
         int activity = select(sockfd + 1, &read_fds, &write_fds, NULL, &tv);
-        
+
         if (activity < 0) {
             if (errno != EINTR) {
                 perror("select error");
@@ -743,13 +739,9 @@ void on_LoginSubmit_clicked(GtkButton *button, gpointer user_data)
         return;  // Return after showing error
     }
     printf("Sending login request\n");
-    // Safe string copy
-    memset(client_name, 0, sizeof(client_name));  // Clear buffer first
-    strncpy(client_name, username_buf, sizeof(client_name) - 1);  // Leave room for null terminator
-    printf("Client name: %s\n", client_name);
     Message message;
     message.message_type = LOGIN_REQUEST;
-    sprintf(message.payload, "%s", client_name);
+    sprintf(message.payload, "%s|%s", username_buf, password_buf);
     queue_push(&send_queue, &message);
     int timeout = 0;
     Message response;
@@ -759,6 +751,13 @@ void on_LoginSubmit_clicked(GtkButton *button, gpointer user_data)
         {
             if (response.status == SUCCESS)
             {
+                // Safe string copy
+                memset(client_name, 0, sizeof(client_name));  // Clear buffer first
+                strncpy(client_name, username_buf, sizeof(client_name) - 1);  // Leave room for null terminator
+                memset(client_password, 0, sizeof(client_password));  // Clear buffer first
+                strncpy(client_password, password_buf, sizeof(client_password) - 1);
+                printf("Client name: %s\n", client_name);
+
                 // Switch to homepage
                 if (stack) {
                     Message message;
@@ -770,6 +769,9 @@ void on_LoginSubmit_clicked(GtkButton *button, gpointer user_data)
                     g_print("Stack widget is null\n");
                 }
             }
+            else{
+                show_error_dialog(response.payload);
+            }
             break;
         }
         usleep(100000); // Wait 100ms
@@ -779,7 +781,6 @@ void on_LoginSubmit_clicked(GtkButton *button, gpointer user_data)
     {
         show_error_dialog("Login failed: Timeout");
     }
-    
 }
 
 // Add new function for resetting game state
@@ -943,7 +944,7 @@ void on_PlayGame_clicked(GtkButton *button, gpointer user_data)
     }
 
     const gchar *opponent_name = gtk_entry_get_text(opponent_entry);
-    
+
     // Validate opponent name
     if (!opponent_name || strlen(opponent_name) == 0) {
         show_error_dialog("Please enter the opponent's name.");
@@ -958,7 +959,6 @@ void on_PlayGame_clicked(GtkButton *button, gpointer user_data)
     snprintf(message.payload, sizeof(message.payload), "%s|%s", client_name, opponent_name);
     // Push game start request to send queue
     queue_push(&send_queue, &message);
-
 }
 
 void on_BackToHome_clicked(GtkButton *button, gpointer user_data)
@@ -975,8 +975,40 @@ void on_GoToHistory_clicked(GtkButton *button, gpointer user_data)
 
 void on_Logout_clicked(GtkButton *button, gpointer user_data)
 {
-    GtkStack *stack = GTK_STACK(user_data);
-    gtk_stack_set_visible_child_name(stack, "login");
+    Message message;
+    memset(&message, 0, sizeof(Message));
+    message.message_type = LOGOUT_REQUEST;
+    message.status = 0;
+    snprintf(message.payload, sizeof(message.payload), "%s|%s", client_name, client_password);
+    queue_push(&send_queue, &message);
+
+    int timeout = 0;
+    Message response;
+    while (timeout < 10)
+    {
+        if (queue_pop(&receive_queue, &response) == 0)
+        {
+            if (response.status == SUCCESS)
+            {
+                if (stack) {
+                    GtkStack *stack = GTK_STACK(user_data);
+                    gtk_stack_set_visible_child_name(stack, "login");
+                } else {
+                    g_print("Stack widget is null\n");
+                }
+            }
+            else{
+                show_error_dialog(response.payload);
+            }
+            break;
+        }
+        usleep(100000);
+        timeout++;
+    }
+    if (timeout >= 10)
+    {
+        show_error_dialog("Logout failed: Timeout");
+    }
 }
 
 void set_signal_connect()
@@ -1038,7 +1070,7 @@ void set_signal_connect()
 }
 
 int main(int argc, char *argv[])
-{   
+{
 
     gtk_init(&argc, &argv);
 
