@@ -223,7 +223,7 @@ void handle_game_turn_response(Message *msg) {
 
         // Nếu trò chơi đã kết thúc
         if (turn == 0) {
-            show_dialog("Game over!");
+            // show_dialog("Game over!");
             gtk_widget_set_sensitive(word_entry, FALSE);
             gtk_widget_set_sensitive(submit_button, FALSE);
             return;
@@ -783,6 +783,91 @@ void on_LoginSubmit_clicked(GtkButton *button, gpointer user_data)
     }
 }
 
+void on_SignupSubmit_clicked(GtkButton *button, gpointer user_data){
+    GtkStack *stack = GTK_STACK(user_data);
+    GtkEntry *input_field;
+
+    if (!builder) {
+        g_print("Builder is null\n");
+        return;
+    }
+
+    input_field = GTK_ENTRY(gtk_builder_get_object(builder, "SignupUsernameEntry"));
+    if (!input_field) {
+        g_print("Cannot find username entry\n");
+        return;
+    }
+    const gchar *username = gtk_entry_get_text(input_field);
+
+    input_field = GTK_ENTRY(gtk_builder_get_object(builder, "SignupPasswordEntry"));
+    if (!input_field) {
+        g_print("Cannot find password entry\n");
+        return;
+    }
+    const gchar *password = gtk_entry_get_text(input_field);
+
+    input_field = GTK_ENTRY(gtk_builder_get_object(builder, "SignupConfirmPassword"));
+    if (!input_field) {
+        g_print("Cannot find confirm password entry\n");
+        return;
+    }
+    const gchar *confirm_password = gtk_entry_get_text(input_field);
+
+    if (strlen(username) == 0) {
+        show_error_dialog("Username cannot be empty!");
+        return;
+    }
+    if (strlen(password) == 0) {
+        show_error_dialog("Password cannot be empty!");
+        return;
+    }
+    if (strlen(confirm_password) == 0) {
+        show_error_dialog("Confirm password cannot be empty!");
+        return;
+    }
+    if (strcmp(password, confirm_password) != 0) {
+        show_error_dialog("Passwords do not match!");
+        return;
+    }
+
+    printf("Sending signup request\n");
+    Message message;
+    message.message_type = SIGNUP_REQUEST;
+    sprintf(message.payload, "%s|%s", username, password);
+    queue_push(&send_queue, &message);
+
+    int timeout = 0;
+    Message response;
+    while (timeout < 10)
+    {
+        if (queue_pop(&receive_queue, &response) == 0)
+        {
+            if (response.status == SUCCESS)
+            {
+                printf("Signup successful\n");
+
+                show_dialog("Signup successful! Please log in.");
+
+                if (stack) {
+                    gtk_stack_set_visible_child_name(stack, "loginpage");
+                } else {
+                    g_print("Stack widget is null\n");
+                }
+            }
+            else {
+                show_error_dialog(response.payload);
+            }
+            return;
+        }
+        usleep(100000);
+        timeout++;
+    }
+
+    if (timeout >= 10) {
+        show_error_dialog("Signup failed: Timeout");
+    }
+}
+
 // Add new function for resetting game state
 void reset_game_state()
 {
@@ -1031,6 +1116,13 @@ void set_signal_connect()
     if (button)
     {
         g_signal_connect(button, "clicked", G_CALLBACK(on_LoginSubmit_clicked), stack);
+    }
+
+
+    button = GTK_WIDGET(gtk_builder_get_object(builder, "SignupSubmit"));
+    if (button)
+    {
+        g_signal_connect(button, "clicked", G_CALLBACK(on_SignupSubmit_clicked), stack);
     }
 
     button = GTK_WIDGET(gtk_builder_get_object(builder, "PlayGame"));
