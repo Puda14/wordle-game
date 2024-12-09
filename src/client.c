@@ -223,7 +223,7 @@ void handle_game_turn_response(Message *msg) {
 
         // Nếu trò chơi đã kết thúc
         if (turn == 0) {
-            show_dialog("Game over!");
+            // show_dialog("Game over!");
             gtk_widget_set_sensitive(word_entry, FALSE);
             gtk_widget_set_sensitive(submit_button, FALSE);
             return;
