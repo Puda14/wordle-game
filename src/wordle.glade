@@ -87,7 +87,7 @@
             </child>
             <child>
               <object class="GtkLabel">
-                <property name="width-request">100</property>
+                <property name="width-request">184</property>
                 <property name="height-request">40</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -97,29 +97,29 @@
                 </attributes>
               </object>
               <packing>
-                <property name="x">640</property>
-                <property name="y">470</property>
+                <property name="x">688</property>
+                <property name="y">483</property>
               </packing>
             </child>
             <child>
               <object class="GtkButton" id="GoToSignup">
                 <property name="label" translatable="yes">Go to signup</property>
-                <property name="width-request">100</property>
-                <property name="height-request">30</property>
+                <property name="width-request">116</property>
+                <property name="height-request">34</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <signal name="clicked" handler="on_GoToSignup_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">825</property>
-                <property name="y">470</property>
+                <property name="x">871</property>
+                <property name="y">487</property>
               </packing>
             </child>
             <child>
               <object class="GtkButton" id="LoginSubmit">
                 <property name="label" translatable="yes">Submit</property>
-                <property name="width-request">115</property>
+                <property name="width-request">248</property>
                 <property name="height-request">50</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -127,7 +127,7 @@
                 <signal name="clicked" handler="on_LoginSubmit_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">741</property>
+                <property name="x">694</property>
                 <property name="y">380</property>
               </packing>
             </child>
@@ -144,16 +144,16 @@
             <child>
               <object class="GtkButton" id="GoToLogin">
                 <property name="label" translatable="yes">Go to login</property>
-                <property name="width-request">116</property>
-                <property name="height-request">80</property>
+                <property name="width-request">105</property>
+                <property name="height-request">34</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <signal name="clicked" handler="on_GoToLogin_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">652</property>
-                <property name="y">367</property>
+                <property name="x">849</property>
+                <property name="y">642</property>
               </packing>
             </child>
             <child>
@@ -163,10 +163,128 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">Sign up</property>
+                <attributes>
+                  <attribute name="font-desc" value="Sans Bold 16"/>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
               </object>
               <packing>
-                <property name="x">642</property>
+                <property name="x">746</property>
+                <property name="y">71</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="width-request">100</property>
+                <property name="height-request">40</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Username</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="x">640</property>
+                <property name="y">180</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="SignupUsernameEntry">
+                <property name="width-request">250</property>
+                <property name="height-request">50</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+              </object>
+              <packing>
+                <property name="x">640</property>
                 <property name="y">220</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="width-request">100</property>
+                <property name="height-request">40</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Password</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="x">640</property>
+                <property name="y">300</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="SignupPasswordEntry">
+                <property name="width-request">250</property>
+                <property name="height-request">50</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+              </object>
+              <packing>
+                <property name="x">640</property>
+                <property name="y">330</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="width-request">100</property>
+                <property name="height-request">40</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Confirm Password</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="x">640</property>
+                <property name="y">420</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="SignupConfirmPassword">
+                <property name="width-request">250</property>
+                <property name="height-request">50</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+              </object>
+              <packing>
+                <property name="x">640</property>
+                <property name="y">450</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="SignupSubmit">
+                <property name="label" translatable="yes">Submit</property>
+                <property name="width-request">250</property>
+                <property name="height-request">50</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+              </object>
+              <packing>
+                <property name="x">640</property>
+                <property name="y">550</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="width-request">204</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Already have an account ? </property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="x">639</property>
+                <property name="y">619</property>
               </packing>
             </child>
           </object>
