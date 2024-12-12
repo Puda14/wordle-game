@@ -38,10 +38,28 @@ typedef struct
   int current_player; // 1 or 2
   int player1_attempts;
   int player2_attempts;
+  int player1_score;
+  int player2_score;
   int game_active;
   int current_attempts;
   PlayTurn turns[MAX_ATTEMPTS];
 } GameSession;
+
+typedef struct{
+  char game_id[20];
+  char player1_name[50];
+  char player2_name[50];
+  char target_word[WORD_LENGTH + 1];
+  int player1_attempts;
+  int player2_attempts;
+  int player1_score;
+  int player2_score;
+  int game_result;
+  int current_attempts;
+  PlayTurn turns[MAX_ATTEMPTS];
+}GameHistory;
+
+
 
 void generate_game_id(char *game_id, size_t size)
 {
@@ -178,6 +196,27 @@ int create_game_session(const char *player1_name, const char *player2_name)
     }
   }
   return -1; // Không có không gian cho game mới
+}
+
+void clear_game_session(int session_id) {
+    GameSession *session = &game_sessions[session_id];
+    
+    // Reset player info
+    memset(session->player1_name, 0, sizeof(session->player1_name));
+    memset(session->player2_name, 0, sizeof(session->player2_name));
+    memset(session->target_word, 0, sizeof(session->target_word));
+    
+    // Reset game state
+    session->current_player = 0;
+    session->player1_attempts = 0;
+    session->player2_attempts = 0;
+    session->game_active = 0;
+    session->current_attempts = 0;
+    
+    // Clear turns history
+    memset(session->turns, 0, sizeof(session->turns));
+    
+    printf("Cleared game session %d\n", session_id);
 }
 
 // Hàm tìm kiếm game đã có người chơi với tên Player1 và Player2
@@ -540,6 +579,7 @@ void handle_message(int client_sock, Message *message)
       turn_message.status = SUCCESS;
       send(get_player_sock(session->player1_name), &turn_message, sizeof(Message), 0);
       send(get_player_sock(session->player2_name), &turn_message, sizeof(Message), 0);
+      clear_game_session(session_id);
     }
     else
     {
