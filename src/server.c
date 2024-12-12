@@ -267,33 +267,37 @@ void send_turn_update(GameSession *session)
 
 void handle_message(int client_sock, Message *message)
 {
-  if (message->message_type == SIGNUP_REQUEST)
-  {
+  if(message->message_type == SIGNUP_REQUEST){
     char username[50], password[50];
-
     sscanf(message->payload, "%49[^|]|%49s", username, password);
 
-    // int signup_status = handle_sign_up(username, password);
-    int signup_status = 0;
-    if (signup_status == 0)
-    {
-      message->status = CREATED;
-      strcpy(message->payload, "Sign up successful");
-    }
-    else if (signup_status == 1)
-    {
+    if (username == NULL || strlen(username) == 0 || password == NULL || strlen(password) == 0) {
       message->status = BAD_REQUEST;
-      strcpy(message->payload, "Username already exists");
-    }
-    else
-    {
-      message->status = INTERNAL_SERVER_ERROR;
-      strcpy(message->payload, "Sign up failed");
-    }
+      strcpy(message->payload, "Username or password is missing.");
+    } else if (user_exists(db, username)) {
+      message->status = BAD_REQUEST;
+      strcpy(message->payload, "Username already exists.");
+    } else {
+      User new_user;
+      strncpy(new_user.username, username, sizeof(new_user.username) - 1);
+      new_user.username[sizeof(new_user.username) - 1] = '\0';
+      strncpy(new_user.password, password, sizeof(new_user.password) - 1);
+      new_user.password[sizeof(new_user.password) - 1] = '\0';
+      new_user.score = 0;
+      new_user.is_online = 0;
 
+      int rc = create_user(db, &new_user);
+      if (rc == SQLITE_OK) {
+        message->status = SUCCESS;
+        strcpy(message->payload, "User registered successfully.");
+      } else {
+        message->status = INTERNAL_SERVER_ERROR;
+        strcpy(message->payload, "Error occurred while registering user.");
+      }
+    }
     send(client_sock, message, sizeof(Message), 0);
   }
-  if (message->message_type == LOGIN_REQUEST)
+  else if (message->message_type == LOGIN_REQUEST)
   {
     char username[50], password[50];
     sscanf(message->payload, "%49[^|]|%49s", username, password);
@@ -326,8 +330,7 @@ void handle_message(int client_sock, Message *message)
       strcpy(message->payload, "Login failed");
     }
     send(client_sock, message, sizeof(Message), 0);
-  }
-  if (message->message_type == LOGOUT_REQUEST) {
+  } else if (message->message_type == LOGOUT_REQUEST) {
     char username[50], password[50];
     sscanf(message->payload, "%49[^|]|%49s", username, password);
     printf("Logout request from user: %s\n", username);
@@ -349,8 +352,7 @@ void handle_message(int client_sock, Message *message)
         strcpy(message->payload, "Logout failed");
     }
     send(client_sock, message, sizeof(Message), 0);
-  }
-  if (message->message_type == LIST_USER) {
+  } else if (message->message_type == LIST_USER) {
     User users[10];
     int user_count = 0;
 
@@ -380,8 +382,7 @@ void handle_message(int client_sock, Message *message)
     }
 
     send(client_sock, message, sizeof(Message), 0);
-  }
-  if(message->message_type == CHALLANGE_REQUEST){
+  } else if(message->message_type == CHALLANGE_REQUEST){
     char player1[50], player2[50];
     sscanf(message->payload, "CHALLANGE_REQUEST|%49[^|]|%49s", player1, player2);
     int player1_sock = get_player_sock(player1);
@@ -395,8 +396,7 @@ void handle_message(int client_sock, Message *message)
     message->status = SUCCESS;
     send(player1_sock, message, sizeof(Message), 0);
     send(player2_sock, message, sizeof(Message), 0);
-  }
-  if(message->message_type == CHALLANGE_RESPONSE){
+  } else if(message->message_type == CHALLANGE_RESPONSE){
     char player1[50], player2[50], response[50];
     sscanf(message->payload, "CHALLANGE_RESPONSE|%49[^|]|%49[^|]|%49s", player1, player2, response);
     int player1_sock = get_player_sock(player1);
@@ -417,9 +417,7 @@ void handle_message(int client_sock, Message *message)
       strcpy(message->payload, "Challange rejected");
       send(player1_sock, message, sizeof(Message), 0);
     }
-  }
-  if (message->message_type == GAME_START)
-  {
+  } else if (message->message_type == GAME_START){
     printf("Received game request\n");
 
     char player1_name[50], player2_name[50];
@@ -472,9 +470,7 @@ void handle_message(int client_sock, Message *message)
     }
     // Gửi phản hồi cho cả hai người chơi
     send(client_sock, message, sizeof(Message), 0);
-  }
-  else if (message->message_type == GAME_GET_TARGET)
-  {
+  } else if (message->message_type == GAME_GET_TARGET){
     printf("Received get target request\n");
     printf("Payload: %s\n", message->payload);
     int session_id;
@@ -491,9 +487,7 @@ void handle_message(int client_sock, Message *message)
       message->status = INTERNAL_SERVER_ERROR;
     }
     send(client_sock, message, sizeof(Message), 0);
-  }
-  else if (message->message_type == GAME_GUESS)
-  {
+  } else if (message->message_type == GAME_GUESS){
     printf("Received game guess\n");
     printf("Payload: %s\n", message->payload);
     int session_id;
@@ -591,8 +585,7 @@ void handle_message(int client_sock, Message *message)
       send(get_player_sock(session->player1_name), &turn_message, sizeof(Message), 0);
       send(get_player_sock(session->player2_name), &turn_message, sizeof(Message), 0);
     }
-  }
-  else if (message->message_type == GAME_UPDATE)
+  } else if (message->message_type == GAME_UPDATE)
   {
     printf("Received game update\n");
     printf("Payload: %s\n", message->payload);
