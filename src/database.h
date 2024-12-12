@@ -38,4 +38,7 @@ void handle_db_error(sqlite3 *db, const char *errMsg);
 int authenticate_user(sqlite3 *db, const char *username, const char *password);
 
 int update_user_online(sqlite3 *db, const char *username);
+
+int update_user_offline(sqlite3 *db, const char *username);
+
 #endif
