@@ -42,6 +42,8 @@ typedef struct
   int player2_score;
   int game_active;
   int current_attempts;
+  char start_time [20];
+  char end_time [20];
   PlayTurn turns[MAX_ATTEMPTS];
 } GameSession;
 
@@ -56,10 +58,25 @@ typedef struct{
   int player2_score;
   int game_result;
   int current_attempts;
+  char start_time [20];
+  char end_time [20];
   PlayTurn turns[MAX_ATTEMPTS];
 }GameHistory;
 
 
+void get_time_as_string(char *buffer, size_t buffer_size) {
+    time_t raw_time;
+    struct tm *time_info;
+
+    // Lấy thời gian hiện tại
+    time(&raw_time);
+
+    // Chuyển thời gian sang cấu trúc `tm`
+    time_info = localtime(&raw_time);
+
+    // Định dạng thời gian thành chuỗi
+    strftime(buffer, buffer_size, "%Y-%m-%d %H:%M:%S", time_info);
+}
 
 void generate_game_id(char *game_id, size_t size)
 {
@@ -194,6 +211,7 @@ int create_game_session(const char *player1_name, const char *player2_name)
       game_sessions[i].player2_score = 0;
       game_sessions[i].game_active = 1;
       game_sessions[i].current_attempts = 0;
+      get_time_as_string(game_sessions[i].start_time, sizeof(game_sessions[i].start_time));
       return i; // Trả về ID game
     }
   }
@@ -218,6 +236,8 @@ void clear_game_session(int session_id) {
     session->player2_score = 0;
     // Clear turns history
     memset(session->turns, 0, sizeof(session->turns));
+    memset(session->start_time, 0, sizeof(session->start_time));
+    memset(session->end_time, 0, sizeof(session->end_time));
     
     printf("Cleared game session %d\n", session_id);
 }
@@ -515,10 +535,7 @@ void handle_message(int client_sock, Message *message)
       printf("User found: %s\n", user.username);
     } else {
       printf("User not found\n");
-      // message->status = NOT_FOUND;
-      // strcpy(message->payload, "User not found");
-      // send(client_sock, message, sizeof(Message), 0);
-      // return;
+
     }
     int player_num = (strcmp(player_name, session->player1_name) == 0) ? 1 : 2;
 
@@ -581,7 +598,8 @@ void handle_message(int client_sock, Message *message)
       points += 20 - session->current_attempts; // Bonus points for correct guess
       if (player_num == 1){
         session->player1_score += points;
-      } else {
+      }
+      if (player_num == 2){
         session->player2_score += points;
       }
       sprintf(message->payload, "WIN|%s|%d|%d|%d|%s",
@@ -601,7 +619,12 @@ void handle_message(int client_sock, Message *message)
 
     // Update user score
     user.score += points;
-    update_user_score(db, user.username, user.score);
+    int upd_score = update_user_score(db, user.username, user.score);
+    if(upd_score != SQLITE_OK){
+      printf("Failed to update user score\n");
+    }else{
+      printf("User score updated\n");
+    }
 
     message->status = SUCCESS;
 
@@ -623,6 +646,35 @@ void handle_message(int client_sock, Message *message)
       turn_message.status = SUCCESS;
       send(get_player_sock(session->player1_name), &turn_message, sizeof(Message), 0);
       send(get_player_sock(session->player2_name), &turn_message, sizeof(Message), 0);
+      get_time_as_string(session->end_time, sizeof(session->end_time));
+      // Save game history
+      /*
+      TODO : Save game history from game session
+      */
+      GameHistory game_history;
+      strcpy(game_history.game_id, session->game_id);
+      strcpy(game_history.player1_name, session->player1_name);
+      strcpy(game_history.player2_name, session->player2_name);
+      strcpy(game_history.target_word, session->target_word);
+      game_history.player1_attempts = session->player1_attempts;
+      game_history.player2_attempts = session->player2_attempts;
+      game_history.player1_score = session->player1_score;
+      game_history.player2_score = session->player2_score;
+      if(player_num == 1){
+        game_history.game_result = 1;
+      }else if(player_num == 2){
+        game_history.game_result = 2;
+      }else{
+        game_history.game_result = 0;
+      }
+      game_history.current_attempts = session->current_attempts;
+      strcpy(game_history.start_time, session->start_time);
+      strcpy(game_history.end_time, session->end_time);
+      memcpy(game_history.turns, session->turns, sizeof(session->turns));
+      //Save game history to db
+      /*
+      TODO: Save game history to database
+      */
       clear_game_session(session_id);
     }
     else
