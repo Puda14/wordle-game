@@ -530,6 +530,13 @@ void handle_message(int client_sock, Message *message)
       return;
     }
 
+    if(!is_valid_guess(guess)){
+      strcpy(message->payload, "Invalid target word");
+      message->status = BAD_REQUEST;
+      send(client_sock, message, sizeof(Message), 0);
+      return;
+    }
+
     // Check the player's guess
     char result[WORD_LENGTH + 1];
     check_guess(guess, session->target_word, result);
@@ -635,7 +642,7 @@ void handle_message(int client_sock, Message *message)
     int session_id;
     char guess[WORD_LENGTH + 1];
     char player_name[50];
-    sscanf(message->payload, "%d|%49", &session_id, player_name);
+    sscanf(message->payload, "%d|%49s", &session_id, player_name);
 
     GameSession *session = &game_sessions[session_id];
   }
@@ -699,7 +706,6 @@ typedef struct
   int game_won;
 } GameState;
 
-// Add functions
 int is_valid_guess(const char *guess)
 {
   for (int i = 0; i < guess_count; i++)
@@ -781,7 +787,6 @@ void check_guess(const char *guess, const char *target, char *result)
   }
 }
 
-// Add to main() after database initialization
 void init_wordle()
 {
   srand(time(NULL));
@@ -809,7 +814,6 @@ int main()
   {
     return 1;
   }
-
 
   // Seed the users
   // seed_users(users, &size);

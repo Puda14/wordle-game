@@ -268,10 +268,12 @@ void handle_game_turn_response(Message *msg) {
 
 void handle_game_guess_response(Message *msg)
 {
-    // Kiểm tra trạng thái thành công của thông điệp
     if (msg->status != SUCCESS)
     {
+        show_error_dialog(msg->payload);
         g_print("Error in game guess response\n");
+        gtk_widget_set_sensitive(word_entry, TRUE);
+        gtk_widget_set_sensitive(submit_button, TRUE);
         return;
     }
 
@@ -923,6 +925,7 @@ void on_submit_word_clicked(GtkButton *button, gpointer user_data)
     if (strlen(word) != WORD_LENGTH)
     {
         g_print("Invalid word length\n");
+        show_error_dialog("Word length is invalid! Please enter a word of length 5.");
         return;
     }
 
@@ -936,7 +939,6 @@ void on_submit_word_clicked(GtkButton *button, gpointer user_data)
     // Disable input until response
     gtk_widget_set_sensitive(word_entry, FALSE);
     gtk_widget_set_sensitive(submit_button, FALSE);
-
 }
 
 // Modify init_game_state to only request target after game start
