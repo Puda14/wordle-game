@@ -152,7 +152,7 @@
                 <signal name="clicked" handler="on_GoToLogin_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">849</property>
+                <property name="x">895</property>
                 <property name="y">642</property>
               </packing>
             </child>
@@ -169,7 +169,7 @@
                 </attributes>
               </object>
               <packing>
-                <property name="x">746</property>
+                <property name="x">764</property>
                 <property name="y">71</property>
               </packing>
             </child>
@@ -185,7 +185,7 @@
                 </attributes>
               </object>
               <packing>
-                <property name="x">640</property>
+                <property name="x">692</property>
                 <property name="y">180</property>
               </packing>
             </child>
@@ -197,7 +197,7 @@
                 <property name="can-focus">True</property>
               </object>
               <packing>
-                <property name="x">640</property>
+                <property name="x">692</property>
                 <property name="y">220</property>
               </packing>
             </child>
@@ -213,7 +213,7 @@
                 </attributes>
               </object>
               <packing>
-                <property name="x">640</property>
+                <property name="x">682</property>
                 <property name="y">300</property>
               </packing>
             </child>
@@ -225,7 +225,7 @@
                 <property name="can-focus">True</property>
               </object>
               <packing>
-                <property name="x">640</property>
+                <property name="x">692</property>
                 <property name="y">330</property>
               </packing>
             </child>
@@ -241,7 +241,7 @@
                 </attributes>
               </object>
               <packing>
-                <property name="x">640</property>
+                <property name="x">692</property>
                 <property name="y">420</property>
               </packing>
             </child>
@@ -253,7 +253,7 @@
                 <property name="can-focus">True</property>
               </object>
               <packing>
-                <property name="x">640</property>
+                <property name="x">692</property>
                 <property name="y">450</property>
               </packing>
             </child>
@@ -267,7 +267,7 @@
                 <property name="receives-default">True</property>
               </object>
               <packing>
-                <property name="x">640</property>
+                <property name="x">692</property>
                 <property name="y">550</property>
               </packing>
             </child>
@@ -283,7 +283,7 @@
                 </attributes>
               </object>
               <packing>
-                <property name="x">639</property>
+                <property name="x">692</property>
                 <property name="y">619</property>
               </packing>
             </child>
@@ -423,6 +423,41 @@
               </packing>
             </child>
             <child>
+              <object class="GtkLabel" id="player1_score_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label">Player 1 Score: 0</property>
+              </object>
+              <packing>
+                <property name="x">1000</property>
+                <property name="y">80</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="player2_score_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label">Player 2 Score: 0</property>
+              </object>
+              <packing>
+                <property name="x">1200</property>
+                <property name="y">80</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="turn_notify">
+                <property name="width-request">125</property>
+                <property name="height-request">24</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label"> </property>
+              </object>
+              <packing>
+                <property name="x">218</property>
+                <property name="y">117</property>
+              </packing>
+            </child>
+            <child>
               <!-- n-columns=3 n-rows=3 -->
               <object class="GtkGrid" id="wordle_grid">
                 <property name="width-request">335</property>
@@ -480,8 +515,8 @@
                 <property name="placeholder-text">Enter 5-letter word</property>
               </object>
               <packing>
-                <property name="x">221</property>
-                <property name="y">86</property>
+                <property name="x">219</property>
+                <property name="y">172</property>
               </packing>
             </child>
             <child>
@@ -495,8 +530,8 @@
                 <signal name="clicked" handler="on_submit_word_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">223</property>
-                <property name="y">145</property>
+                <property name="x">218</property>
+                <property name="y">239</property>
               </packing>
             </child>
             <child>
