@@ -20,3 +20,5 @@ client
 # Ignore compiled code and build artifacts
 build/
 bin/
+
+database.db

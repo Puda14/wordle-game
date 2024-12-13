@@ -8,6 +8,7 @@
 #include <sys/select.h>
 #include <sqlite3.h>
 #include <time.h>
+#include <stdbool.h>
 #include "database.h"
 #include "./model/message.h"
 
@@ -40,6 +41,7 @@ typedef struct
   int player2_attempts;
   int player1_score;
   int player2_score;
+  bool used[WORD_LENGTH];
   int game_active;
   int current_attempts;
   char start_time [20];
@@ -209,6 +211,7 @@ int create_game_session(const char *player1_name, const char *player2_name)
       strcpy(game_sessions[i].target_word, word);
       game_sessions[i].player1_score = 0;
       game_sessions[i].player2_score = 0;
+      memset(game_sessions[i].used, false, sizeof(game_sessions[i].used));
       game_sessions[i].game_active = 1;
       game_sessions[i].current_attempts = 0;
       get_time_as_string(game_sessions[i].start_time, sizeof(game_sessions[i].start_time));
@@ -220,12 +223,12 @@ int create_game_session(const char *player1_name, const char *player2_name)
 
 void clear_game_session(int session_id) {
     GameSession *session = &game_sessions[session_id];
-    
+
     // Reset player info
     memset(session->player1_name, 0, sizeof(session->player1_name));
     memset(session->player2_name, 0, sizeof(session->player2_name));
     memset(session->target_word, 0, sizeof(session->target_word));
-    
+
     // Reset game state
     session->current_player = 0;
     session->player1_attempts = 0;
@@ -238,7 +241,7 @@ void clear_game_session(int session_id) {
     memset(session->turns, 0, sizeof(session->turns));
     memset(session->start_time, 0, sizeof(session->start_time));
     memset(session->end_time, 0, sizeof(session->end_time));
-    
+
     printf("Cleared game session %d\n", session_id);
 }
 
@@ -559,11 +562,14 @@ void handle_message(int client_sock, Message *message)
     check_guess(guess, session->target_word, result);
     // Calculate points
     int points = 0;
+
     for (int i = 0; i < WORD_LENGTH; i++) {
-        if (result[i] == 'G') {
-            points += 1;
-        }
+      if (result[i] == 'G' && !session->used[i]) {
+        points += 1;
+        session->used[i] = true;
+      }
     }
+
     // Update attempts and turn
     if (player_num == 1)
     {
@@ -588,7 +594,7 @@ void handle_message(int client_sock, Message *message)
     strcpy(session->turns[session->current_attempts].player_name, player_name);
     strcpy(session->turns[session->current_attempts].guess, guess);
     strcpy(session->turns[session->current_attempts].result, result);
-    
+
     // Update current attempts
     session->current_attempts++;
     // Check game-over conditions
