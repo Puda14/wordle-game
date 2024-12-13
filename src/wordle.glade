@@ -300,14 +300,14 @@
             <property name="can-focus">False</property>
             <child>
               <object class="GtkListBox" id="user_list_box">
-                <property name="width-request">651</property>
-                <property name="height-request">200</property>
+                <property name="width-request">500</property>
+                <property name="height-request">250</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
               </object>
               <packing>
-                <property name="x">485</property>
-                <property name="y">125</property>
+                <property name="x">551</property>
+                <property name="y">165</property>
               </packing>
             </child>
             <child>
@@ -321,35 +321,35 @@
                 <signal name="clicked" handler="on_send_challenge_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">261</property>
-                <property name="y">218</property>
+                <property name="x">250</property>
+                <property name="y">280</property>
               </packing>
             </child>
             <child>
               <object class="GtkButton" id="PlayGame">
                 <property name="label" translatable="yes">Play game</property>
-                <property name="width-request">111</property>
-                <property name="height-request">43</property>
+                <property name="width-request">200</property>
+                <property name="height-request">40</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <signal name="clicked" handler="on_PlayGame_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">261</property>
-                <property name="y">262</property>
+                <property name="x">250</property>
+                <property name="y">330</property>
               </packing>
             </child>
             <child>
               <object class="GtkEntry" id="opponent_name_entry">
                 <property name="width-request">200</property>
-                <property name="height-request">40</property>
+                <property name="height-request">60</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="placeholder-text">Enter opponent name</property>
               </object>
               <packing>
-                <property name="x">256</property>
+                <property name="x">250</property>
                 <property name="y">165</property>
               </packing>
             </child>
@@ -360,40 +360,43 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">Home page</property>
+                <attributes>
+                  <attribute name="font-desc" value="Sans Bold 16"/>
+                </attributes>
               </object>
               <packing>
-                <property name="x">769</property>
+                <property name="x">587</property>
                 <property name="y">30</property>
               </packing>
             </child>
             <child>
               <object class="GtkButton" id="GoToHistory">
                 <property name="label" translatable="yes">History</property>
-                <property name="width-request">100</property>
-                <property name="height-request">37</property>
+                <property name="width-request">200</property>
+                <property name="height-request">40</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <signal name="clicked" handler="on_GoToHistory_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">263</property>
-                <property name="y">316</property>
+                <property name="x">250</property>
+                <property name="y">380</property>
               </packing>
             </child>
             <child>
               <object class="GtkButton" id="Logout">
                 <property name="label" translatable="yes">Logout</property>
                 <property name="width-request">100</property>
-                <property name="height-request">44</property>
+                <property name="height-request">40</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <signal name="clicked" handler="on_Logout_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">262</property>
-                <property name="y">367</property>
+                <property name="x">949</property>
+                <property name="y">450</property>
               </packing>
             </child>
           </object>
