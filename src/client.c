@@ -189,6 +189,29 @@ int init_tcp_socket(const char *server_ip, int port)
     return sockfd;
 }
 
+//Hanlde for game score
+void handle_score_update(Message *msg) {
+    char player1_name[50], player2_name[50];
+    int player1_score, player2_score;
+    sscanf(msg->payload, "%49[^|]|%d|%49[^|]|%d", player1_name, &player1_score, player2_name, &player2_score);
+
+    // Update player 1 score label
+    GtkLabel *player1_score_label = GTK_LABEL(gtk_builder_get_object(builder, "player1_score_label"));
+    if (player1_score_label) {
+        char score_text[100];
+        snprintf(score_text, sizeof(score_text), "%s : %d", player1_name, player1_score);
+        gtk_label_set_text(player1_score_label, score_text);
+    }
+
+    // Update player 2 score label
+    GtkLabel *player2_score_label = GTK_LABEL(gtk_builder_get_object(builder, "player2_score_label"));
+    if (player2_score_label) {
+        char score_text[100];
+        snprintf(score_text, sizeof(score_text), "%s : %d", player2_name, player2_score);
+        gtk_label_set_text(player2_score_label, score_text);
+    }
+}
+
 // Add message response handlers
 void handle_game_start_response(Message *msg)
 {
@@ -200,7 +223,18 @@ void handle_game_start_response(Message *msg)
         init_game_state(game_session_id);
         // Switch to game view
         gtk_stack_set_visible_child_name(GTK_STACK(stack), "game");
-
+        GtkLabel *turn_notify_label = GTK_LABEL(gtk_builder_get_object(builder, "turn_notify"));
+        if (turn_notify_label) {
+            if(player_num == 1) {
+                gtk_widget_set_sensitive(word_entry, TRUE);
+                gtk_widget_set_sensitive(submit_button, TRUE);
+                gtk_label_set_text(turn_notify_label, "Your turn");
+            } else {
+                gtk_widget_set_sensitive(word_entry, FALSE);
+                gtk_widget_set_sensitive(submit_button, FALSE);
+                gtk_label_set_text(turn_notify_label, "Opponent's turn");
+            }
+        }
         // Reset game state
         current_row = 0;
         opponent_attempts = 0;
@@ -228,17 +262,28 @@ void handle_game_turn_response(Message *msg) {
             gtk_widget_set_sensitive(submit_button, FALSE);
             return;
         }
+         // Update turn notification label
+        GtkLabel *turn_notify_label = GTK_LABEL(gtk_builder_get_object(builder, "turn_notify"));
 
         // Cập nhật lượt chơi
         if (turn == 1 && player_num == 1) {
             gtk_widget_set_sensitive(word_entry, TRUE);
             gtk_widget_set_sensitive(submit_button, TRUE);
+            if (turn_notify_label) {
+            gtk_label_set_text(turn_notify_label, "Your turn");
+            }
         } else if (turn == 2 && player_num == 2) {
             gtk_widget_set_sensitive(word_entry, TRUE);
             gtk_widget_set_sensitive(submit_button, TRUE);
+            if (turn_notify_label) {
+            gtk_label_set_text(turn_notify_label, "Your turn");
+            }
         } else {
             gtk_widget_set_sensitive(word_entry, FALSE);
             gtk_widget_set_sensitive(submit_button, FALSE);
+            if (turn_notify_label) {
+            gtk_label_set_text(turn_notify_label, "Opponent's turn");
+            }
         }
     }
 }
@@ -568,6 +613,9 @@ gboolean process_network_response(gpointer data)
             break;
         case CHALLANGE_RESPONSE:
             handle_challange_response(&msg);
+            break;
+        case GAME_SCORE:
+            handle_score_update(&msg);
             break;
         }
     }

@@ -99,6 +99,28 @@ int update_user(sqlite3 *db, const User *user) {
   return rc;
 }
 
+int update_user_score(sqlite3 *db, const char *username, int score) {
+  const char *sql = "UPDATE user SET score = ? WHERE username = ?";
+  sqlite3_stmt *stmt;
+  int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+  if (rc != SQLITE_OK) {
+    fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+    return rc;
+  }
+
+  sqlite3_bind_int(stmt, 1, score); // Ensure score is properly bound
+  sqlite3_bind_text(stmt, 2, username, -1, SQLITE_STATIC);
+
+
+  rc = sqlite3_step(stmt);
+  if (rc != SQLITE_DONE) {
+    handle_db_error(db, sqlite3_errmsg(db));
+  }
+
+  sqlite3_finalize(stmt);
+  return rc;
+}
+
 // Delete a user from the database
 int delete_user(sqlite3 *db, int user_id) {
   const char *sql = "DELETE FROM user WHERE id = ?";
