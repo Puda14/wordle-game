@@ -189,6 +189,29 @@ int init_tcp_socket(const char *server_ip, int port)
     return sockfd;
 }
 
+//Hanlde for game score
+void handle_score_update(Message *msg) {
+    char player1_name[50], player2_name[50];
+    int player1_score, player2_score;
+    sscanf(msg->payload, "%49[^|]|%d|%49[^|]|%d", player1_name, &player1_score, player2_name, &player2_score);
+
+    // Update player 1 score label
+    GtkLabel *player1_score_label = GTK_LABEL(gtk_builder_get_object(builder, "player1_score_label"));
+    if (player1_score_label) {
+        char score_text[100];
+        snprintf(score_text, sizeof(score_text), "%s : %d", player1_name, player1_score);
+        gtk_label_set_text(player1_score_label, score_text);
+    }
+
+    // Update player 2 score label
+    GtkLabel *player2_score_label = GTK_LABEL(gtk_builder_get_object(builder, "player2_score_label"));
+    if (player2_score_label) {
+        char score_text[100];
+        snprintf(score_text, sizeof(score_text), "%s : %d", player2_name, player2_score);
+        gtk_label_set_text(player2_score_label, score_text);
+    }
+}
+
 // Add message response handlers
 void handle_game_start_response(Message *msg)
 {
@@ -566,6 +589,9 @@ gboolean process_network_response(gpointer data)
             break;
         case CHALLANGE_RESPONSE:
             handle_challange_response(&msg);
+            break;
+        case GAME_SCORE:
+            handle_score_update(&msg);
             break;
         }
     }

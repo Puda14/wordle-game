@@ -423,6 +423,28 @@
               </packing>
             </child>
             <child>
+              <object class="GtkLabel" id="player1_score_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label">Player 1 Score: 0</property>
+              </object>
+              <packing>
+                <property name="x">1000</property>
+                <property name="y">80</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="player2_score_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label">Player 2 Score: 0</property>
+              </object>
+              <packing>
+                <property name="x">1200</property>
+                <property name="y">80</property>
+              </packing>
+            </child>
+            <child>
               <!-- n-columns=3 n-rows=3 -->
               <object class="GtkGrid" id="wordle_grid">
                 <property name="width-request">335</property>

@@ -190,6 +190,8 @@ int create_game_session(const char *player1_name, const char *player2_name)
       game_sessions[i].current_player = 1; // Player 1 bắt đầu
       char *word = get_random_word();
       strcpy(game_sessions[i].target_word, word);
+      game_sessions[i].player1_score = 0;
+      game_sessions[i].player2_score = 0;
       game_sessions[i].game_active = 1;
       game_sessions[i].current_attempts = 0;
       return i; // Trả về ID game
@@ -212,7 +214,8 @@ void clear_game_session(int session_id) {
     session->player2_attempts = 0;
     session->game_active = 0;
     session->current_attempts = 0;
-    
+    session->player1_score = 0;
+    session->player2_score = 0;
     // Clear turns history
     memset(session->turns, 0, sizeof(session->turns));
     
@@ -261,6 +264,16 @@ void send_turn_update(GameSession *session)
   message.status = SUCCESS;
 
   // Gửi thông báo lượt chơi đến cả hai người chơi
+  send(get_player_sock(session->player1_name), &message, sizeof(Message), 0);
+  send(get_player_sock(session->player2_name), &message, sizeof(Message), 0);
+}
+
+void send_score_update(GameSession *session){
+  Message message;
+  message.message_type = GAME_SCORE;
+  sprintf(message.payload, "%s|%d|%s|%d",session->player1_name, session->player1_score,session->player2_name, session->player2_score);
+  message.status = SUCCESS;
+  printf("Sending score update to %s and %s\n", session->player1_name, session->player2_name);
   send(get_player_sock(session->player1_name), &message, sizeof(Message), 0);
   send(get_player_sock(session->player2_name), &message, sizeof(Message), 0);
 }
@@ -496,6 +509,17 @@ void handle_message(int client_sock, Message *message)
     sscanf(message->payload, "%d|%49[^|]|%49s", &session_id, player_name, guess);
 
     GameSession *session = &game_sessions[session_id];
+    User user;
+    int get_user = get_user_by_username(db, player_name, &user);
+    if (get_user == SQLITE_OK) {
+      printf("User found: %s\n", user.username);
+    } else {
+      printf("User not found\n");
+      // message->status = NOT_FOUND;
+      // strcpy(message->payload, "User not found");
+      // send(client_sock, message, sizeof(Message), 0);
+      // return;
+    }
     int player_num = (strcmp(player_name, session->player1_name) == 0) ? 1 : 2;
 
     if (player_num != session->current_player)
@@ -509,11 +533,18 @@ void handle_message(int client_sock, Message *message)
     // Check the player's guess
     char result[WORD_LENGTH + 1];
     check_guess(guess, session->target_word, result);
-
+    // Calculate points
+    int points = 0;
+    for (int i = 0; i < WORD_LENGTH; i++) {
+        if (result[i] == 'G') {
+            points += 1;
+        }
+    }
     // Update attempts and turn
     if (player_num == 1)
     {
       session->player1_attempts++;
+      session->player1_score += points;
       if (session->player1_attempts < 6)
       {
         session->current_player = 2; // Pass turn to player 2
@@ -522,6 +553,7 @@ void handle_message(int client_sock, Message *message)
     else
     {
       session->player2_attempts++;
+      session->player2_score += points;
       if (session->player2_attempts < 6)
       {
         session->current_player = 1; // Pass turn to player 1
@@ -532,12 +564,19 @@ void handle_message(int client_sock, Message *message)
     strcpy(session->turns[session->current_attempts].player_name, player_name);
     strcpy(session->turns[session->current_attempts].guess, guess);
     strcpy(session->turns[session->current_attempts].result, result);
+    
     // Update current attempts
     session->current_attempts++;
     // Check game-over conditions
     int game_over = 0;
     if (strcmp(guess, session->target_word) == 0)
     {
+      points += 20 - session->current_attempts; // Bonus points for correct guess
+      if (player_num == 1){
+        session->player1_score += points;
+      } else {
+        session->player2_score += points;
+      }
       sprintf(message->payload, "WIN|%s|%d|%d|%d|%s",
               result, player_num, session->player1_attempts, session->player2_attempts, guess);
       game_over = 1;
@@ -553,6 +592,10 @@ void handle_message(int client_sock, Message *message)
               result, session->current_player, session->player1_attempts, session->player2_attempts, guess);
     }
 
+    // Update user score
+    user.score += points;
+    update_user_score(db, user.username, user.score);
+
     message->status = SUCCESS;
 
     // Send the result of the guess to both players
@@ -560,7 +603,7 @@ void handle_message(int client_sock, Message *message)
     printf("Sent guess result to %s\n", session->player1_name);
     send(get_player_sock(session->player2_name), message, sizeof(Message), 0);
     printf("Sent guess result to %s\n", session->player2_name);
-
+    send_score_update(session);
     // If game is over, end the session
     if (game_over)
     {
