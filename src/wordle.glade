@@ -152,7 +152,7 @@
                 <signal name="clicked" handler="on_GoToLogin_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">849</property>
+                <property name="x">895</property>
                 <property name="y">642</property>
               </packing>
             </child>
@@ -169,7 +169,7 @@
                 </attributes>
               </object>
               <packing>
-                <property name="x">746</property>
+                <property name="x">764</property>
                 <property name="y">71</property>
               </packing>
             </child>
@@ -185,7 +185,7 @@
                 </attributes>
               </object>
               <packing>
-                <property name="x">640</property>
+                <property name="x">692</property>
                 <property name="y">180</property>
               </packing>
             </child>
@@ -197,7 +197,7 @@
                 <property name="can-focus">True</property>
               </object>
               <packing>
-                <property name="x">640</property>
+                <property name="x">692</property>
                 <property name="y">220</property>
               </packing>
             </child>
@@ -213,7 +213,7 @@
                 </attributes>
               </object>
               <packing>
-                <property name="x">640</property>
+                <property name="x">682</property>
                 <property name="y">300</property>
               </packing>
             </child>
@@ -225,7 +225,7 @@
                 <property name="can-focus">True</property>
               </object>
               <packing>
-                <property name="x">640</property>
+                <property name="x">692</property>
                 <property name="y">330</property>
               </packing>
             </child>
@@ -241,7 +241,7 @@
                 </attributes>
               </object>
               <packing>
-                <property name="x">640</property>
+                <property name="x">692</property>
                 <property name="y">420</property>
               </packing>
             </child>
@@ -253,7 +253,7 @@
                 <property name="can-focus">True</property>
               </object>
               <packing>
-                <property name="x">640</property>
+                <property name="x">692</property>
                 <property name="y">450</property>
               </packing>
             </child>
@@ -267,7 +267,7 @@
                 <property name="receives-default">True</property>
               </object>
               <packing>
-                <property name="x">640</property>
+                <property name="x">692</property>
                 <property name="y">550</property>
               </packing>
             </child>
@@ -283,7 +283,7 @@
                 </attributes>
               </object>
               <packing>
-                <property name="x">639</property>
+                <property name="x">692</property>
                 <property name="y">619</property>
               </packing>
             </child>
