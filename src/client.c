@@ -8,6 +8,7 @@
 #include <pthread.h>
 #include <fcntl.h>
 #include <stdbool.h>
+#include "database.h"
 #include "./model/message.h"
 
 #define PORT 8080
@@ -18,14 +19,6 @@
 
 // Message queue structure
 #define MAX_QUEUE_SIZE 100
-
-typedef struct {
-  int id;
-  char username[50];
-  char password[50];
-  int score;
-  int is_online;
-} User;
 
 typedef struct
 {
@@ -378,6 +371,79 @@ void handle_game_guess_response(Message *msg)
             current_player, is_our_turn ? "Yes" : "No");
 }
 
+void handle_game_detail_response(Message *msg) {
+  if (msg->status != SUCCESS) {
+    g_print("Error in fetching game details: %s\n", msg->payload);
+    show_error_dialog("Failed to retrieve game details.");
+    return;
+  }
+
+  // Parse the game details
+  GameHistory game_details;
+  memset(&game_details, 0, sizeof(GameHistory));
+
+  int parsed_fields = sscanf(msg->payload,
+       "%19[^|]|%49[^|]|%49[^|]|%d|%d|%49[^|]|%5[^|]|%19[^|]|%19[^|]",
+       game_details.game_id, game_details.player1, game_details.player2,
+       &game_details.player1_score, &game_details.player2_score,
+       game_details.winner, game_details.word,
+       game_details.start_time, game_details.end_time);
+
+  // Parse moves (assuming they're appended in the payload)
+  char *moves_start = strstr(msg->payload, "\nMoves:");
+  if (moves_start) {
+    moves_start += 7; // Skip the "\nMoves:" prefix
+    char *line = strtok(moves_start, "\n");
+    int move_index = 0;
+
+    while (line && move_index < 12) {
+      sscanf(line, "%49[^|]|%5[^|]|%5s",
+             game_details.moves[move_index].player_name,
+             game_details.moves[move_index].guess,
+             game_details.moves[move_index].result);
+
+      move_index++;
+      line = strtok(NULL, "\n");
+    }
+  }
+
+  // Create and populate the dialog with game details
+  GtkWidget *dialog = gtk_message_dialog_new(
+      GTK_WINDOW(window), GTK_DIALOG_MODAL, GTK_MESSAGE_INFO, GTK_BUTTONS_OK, "Game Details");
+
+  // Format the game details into a readable string
+  char details[2048] = {0};
+  snprintf(details, sizeof(details),
+           "Game ID: %s\n"
+           "Players: %s vs %s\n"
+           "Score: %d - %d\n"
+           "Winner: %s\n"
+           "Word: %s\n"
+           "Start Time: %s\n"
+           "End Time: %s\n\n"
+           "Moves:\n",
+           game_details.game_id, game_details.player1, game_details.player2,
+           game_details.player1_score, game_details.player2_score, game_details.winner,
+           game_details.word, game_details.start_time, game_details.end_time);
+
+  for (int i = 0; i < 12; i++) {
+    if (strlen(game_details.moves[i].guess) == 0) {
+      break; // No more moves
+    }
+    char move[256];
+    snprintf(move, sizeof(move), "Player: %s | Guess: %s | Result: %s\n",
+             game_details.moves[i].player_name, game_details.moves[i].guess,
+             game_details.moves[i].result);
+    strncat(details, move, sizeof(details) - strlen(details) - 1);
+  }
+
+  gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "%s", details);
+
+  // Run and destroy the dialog
+  gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_destroy(dialog);
+}
+
 // Add response handlers
 void handle_game_get_target_response(Message *msg)
 {
@@ -543,6 +609,160 @@ void handle_challange_response(Message *msg)
         }
     }
 }
+
+int parse_game_history_list(const char *payload, GameHistory *game_history_list, int max_games) {
+  char *payload_copy = strdup(payload); // Duplicate payload to safely tokenize
+  if (!payload_copy) {
+    g_print("Memory allocation failed for payload copy.\n");
+    return 0;
+  }
+
+  int game_count = 0;
+  char *line = strtok(payload_copy, "\n"); // Each line represents a game history
+
+  while (line != NULL && game_count < max_games) {
+    GameHistory *current = &game_history_list[game_count];
+    memset(current, 0, sizeof(GameHistory)); // Clear memory for safety
+
+    // Parse the game history line
+    sscanf(line, "Game ID: %19s | %49s vs %49s | Winner: %49s | Score: %d-%d",
+           current->game_id, current->player1, current->player2,
+           current->winner, &current->player1_score, &current->player2_score);
+
+    game_count++;
+    line = strtok(NULL, "\n"); // Get the next line
+  }
+
+  free(payload_copy); // Free the duplicated payload
+  return game_count;
+}
+
+void update_history_list_box(GameHistory *game_history_list, int game_count) {
+  GtkListBox *list_box = GTK_LIST_BOX(gtk_builder_get_object(builder, "history_list_box"));
+  if (!list_box) {
+    g_print("Cannot find history list box\n");
+    return;
+  }
+
+  // Remove existing rows
+  GtkListBoxRow *row;
+  while ((row = gtk_list_box_get_row_at_index(list_box, 0)) != NULL) {
+    gtk_container_remove(GTK_CONTAINER(list_box), GTK_WIDGET(row));
+  }
+
+  // Add new rows
+  for (int i = 0; i < game_count; i++) {
+    // Create row container
+    GtkWidget *row_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+    gtk_widget_set_margin_start(row_box, 5);
+    gtk_widget_set_margin_end(row_box, 5);
+    gtk_widget_set_margin_top(row_box, 5);
+    gtk_widget_set_margin_bottom(row_box, 5);
+
+    // Create labels for game history
+    char game_info[256];
+    snprintf(game_info, sizeof(game_info), "Game ID: %s | %s vs %s | Winner: %s | Score: %d-%d",
+             game_history_list[i].game_id, game_history_list[i].player1, game_history_list[i].player2,
+             game_history_list[i].winner, game_history_list[i].player1_score, game_history_list[i].player2_score);
+
+    GtkWidget *label = gtk_label_new(game_info);
+    gtk_widget_set_halign(label, GTK_ALIGN_START);
+    gtk_box_pack_start(GTK_BOX(row_box), label, TRUE, TRUE, 0);
+
+    // Create row and add container
+    GtkWidget *row = gtk_list_box_row_new();
+    gtk_container_add(GTK_CONTAINER(row), row_box);
+    gtk_list_box_insert(list_box, row, -1);
+
+    // Show all widgets
+    gtk_widget_show_all(row);
+  }
+
+  // Show the list box
+  gtk_widget_show_all(GTK_WIDGET(list_box));
+}
+
+void handle_history_list_response(Message *msg) {
+    if (msg->status != SUCCESS) {
+        g_print("Error in fetching history: %s\n", msg->payload);
+        show_error_dialog("Failed to retrieve game history.");
+        return;
+    }
+
+    // Parse the game history list
+    GameHistory game_history_list[10];
+    int game_count = parse_game_history_list(msg->payload, game_history_list, 10);
+
+    // Debug: Print the retrieved history
+    printf("Received %d game histories:\n", game_count);
+    for (int i = 0; i < game_count; i++) {
+        printf("Game ID: %s | Players: %s vs %s | Winner: %s\n",
+                game_history_list[i].game_id, game_history_list[i].player1,
+                game_history_list[i].player2, game_history_list[i].winner);
+    }
+
+    // Update the history list box
+    update_history_list_box(game_history_list, game_count);
+}
+
+void on_view_history_clicked(GtkButton *button, gpointer user_data) {
+  g_print("View history clicked\n");
+
+  // Get the history_list_box widget
+  GtkListBox *list_box = GTK_LIST_BOX(gtk_builder_get_object(builder, "history_list_box"));
+  if (!list_box) {
+    g_print("Cannot find history list box\n");
+    return;
+  }
+
+  // Get the selected row
+  GtkListBoxRow *selected_row = gtk_list_box_get_selected_row(list_box);
+  if (!selected_row) {
+    show_error_dialog("Please select a game first.");
+    return;
+  }
+
+  // Get the box inside the row
+  GtkWidget *box = gtk_bin_get_child(GTK_BIN(selected_row));
+  if (!GTK_IS_BOX(box)) {
+    g_print("Selected row does not contain a GtkBox\n");
+    return;
+  }
+
+  // Get the label inside the box
+  GList *children = gtk_container_get_children(GTK_CONTAINER(box));
+  if (!children) {
+    g_print("No children in the selected row's box\n");
+    return;
+  }
+
+  GtkWidget *label = GTK_WIDGET(children->data); // First child is the label
+  g_list_free(children);
+
+  if (!GTK_IS_LABEL(label)) {
+    g_print("First child of box is not a label\n");
+    return;
+  }
+
+  const gchar *label_text = gtk_label_get_text(GTK_LABEL(label));
+  if (!label_text) {
+    g_print("Label text is null\n");
+    return;
+  }
+
+  // Extract the game ID from the label text
+  char game_id[20] = {0};
+  sscanf(label_text, "Game ID: %19s", game_id);
+
+  // Send GAME_DETAIL_REQUEST to the server
+  Message message;
+  message.message_type = GAME_DETAIL_REQUEST;
+  snprintf(message.payload, sizeof(message.payload), "%s", game_id);
+
+  queue_push(&send_queue, &message); // Push the request to the send queue
+  g_print("Game detail request sent for Game ID: %s\n", game_id);
+}
+
 void on_send_challenge_clicked(GtkButton *button, gpointer user_data)
 {
     printf("Send challenge clicked\n");
@@ -584,6 +804,91 @@ void on_send_challenge_clicked(GtkButton *button, gpointer user_data)
     char *dialog_message = g_strdup_printf("Challenge sent to %s", opponent_name);
     show_dialog(dialog_message);
 }
+
+void on_send_rechallenge_clicked(GtkButton *button, gpointer user_data) {
+  printf("Send rechallenge clicked\n");
+
+  // Get the history_list_box widget
+  GtkListBox *list_box = GTK_LIST_BOX(gtk_builder_get_object(builder, "history_list_box"));
+  if (!list_box) {
+    g_print("Cannot find history list box\n");
+    return;
+  }
+
+  // Get the selected row
+  GtkListBoxRow *selected_row = gtk_list_box_get_selected_row(list_box);
+  if (!selected_row) {
+    show_error_dialog("Please select a game first");
+    return;
+  }
+
+  // Get the child box inside the selected row
+  GtkWidget *box = gtk_bin_get_child(GTK_BIN(selected_row));
+  if (!GTK_IS_BOX(box)) {
+    g_print("Selected row does not contain a GtkBox\n");
+    return;
+  }
+
+  // Get the first child (label) inside the box
+  GList *children = gtk_container_get_children(GTK_CONTAINER(box));
+  if (!children) {
+    g_print("No children in the selected row's box\n");
+    return;
+  }
+
+  GtkWidget *label = GTK_WIDGET(children->data);
+  g_list_free(children);
+
+  if (!GTK_IS_LABEL(label)) {
+    g_print("First child of the box is not a GtkLabel\n");
+    return;
+  }
+
+  const gchar *label_text = gtk_label_get_text(GTK_LABEL(label));
+  if (!label_text || strlen(label_text) == 0) {
+    show_error_dialog("Invalid selection. No game data found.");
+    return;
+  }
+
+  // Debug: Print the label text
+  g_print("Selected Label Text: %s\n", label_text);
+
+  // Extract the opponent's username
+  char player1[50] = {0};
+  char player2[50] = {0};
+
+  if (sscanf(label_text, "Game ID: %*[^|] | %49[^ ] vs %49[^ ] | %*s", player1, player2) != 2) {
+    show_error_dialog("Failed to extract player names from selected game.");
+    return;
+  }
+
+  // Determine opponent name based on current client_name
+  char opponent_name[50] = {0};
+  if (strcmp(client_name, player1) == 0) {
+    strncpy(opponent_name, player2, sizeof(opponent_name) - 1);
+  } else if (strcmp(client_name, player2) == 0) {
+    strncpy(opponent_name, player1, sizeof(opponent_name) - 1);
+  } else {
+    show_error_dialog("You were not a participant in the selected game.");
+    return;
+  }
+
+  // Validate that the opponent is not the client itself
+  if (strcmp(opponent_name, client_name) == 0) {
+    show_error_dialog("Cannot challenge yourself!");
+    return;
+  }
+
+  // Send rechallenge request
+  Message msg;
+  msg.message_type = CHALLANGE_REQUEST;
+  snprintf(msg.payload, sizeof(msg.payload), "CHALLANGE_REQUEST|%s|%s", client_name, opponent_name);
+
+  queue_push(&send_queue, &msg);
+  char *dialog_message = g_strdup_printf("Rechallenge sent to %s", opponent_name);
+  show_dialog(dialog_message);
+}
+
 // UI thread network response handler
 gboolean process_network_response(gpointer data)
 {
@@ -616,6 +921,12 @@ gboolean process_network_response(gpointer data)
             break;
         case GAME_SCORE:
             handle_score_update(&msg);
+            break;
+        case LIST_GAME_HISTORY:
+            handle_history_list_response(&msg);
+            break;
+        case GAME_DETAIL_REQUEST:
+            handle_game_detail_response(&msg);
             break;
         }
     }
@@ -1105,7 +1416,16 @@ void on_BackToHome_clicked(GtkButton *button, gpointer user_data)
 void on_GoToHistory_clicked(GtkButton *button, gpointer user_data)
 {
     GtkStack *stack = GTK_STACK(user_data);
+
+    Message message;
+    message.message_type = LIST_GAME_HISTORY;
+    snprintf(message.payload, sizeof(message.payload), "%s", client_name);
+
+    queue_push(&send_queue, &message);
+
     gtk_stack_set_visible_child_name(stack, "history");
+
+    g_print("LIST_HISTORY request sent for user: %s\n", client_name);
 }
 
 void on_Logout_clicked(GtkButton *button, gpointer user_data)
@@ -1168,7 +1488,6 @@ void set_signal_connect()
         g_signal_connect(button, "clicked", G_CALLBACK(on_LoginSubmit_clicked), stack);
     }
 
-
     button = GTK_WIDGET(gtk_builder_get_object(builder, "SignupSubmit"));
     if (button)
     {
@@ -1180,6 +1499,7 @@ void set_signal_connect()
     {
         g_signal_connect(button, "clicked", G_CALLBACK(on_PlayGame_clicked), stack);
     }
+
     button = GTK_WIDGET(gtk_builder_get_object(builder, "send_challenge_button"));
     if (button)
     {
@@ -1208,6 +1528,18 @@ void set_signal_connect()
     if (button)
     {
         g_signal_connect(button, "clicked", G_CALLBACK(on_Logout_clicked), stack);
+    }
+
+    button = GTK_WIDGET(gtk_builder_get_object(builder, "view_history_button"));
+    if (button)
+    {
+        g_signal_connect(button, "clicked", G_CALLBACK(on_view_history_clicked), stack);
+    }
+
+    button = GTK_WIDGET(gtk_builder_get_object(builder, "send_rechallenge_button"));
+    if (button)
+    {
+        g_signal_connect(button, "clicked", G_CALLBACK(on_send_rechallenge_clicked), stack);
     }
 }
 
