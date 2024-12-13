@@ -10,7 +10,7 @@ enum MessageType { SIGNUP_REQUEST = 0, LOGIN_REQUEST = 1, LOGOUT_REQUEST = 2,
                     GAME_GET_TARGET = 9, GAME_JOIN = 10, GAME_LEAVE = 11, GAME_UPDATE = 12,
                     GAME_SCORE = 17,
                     CHALLANGE_REQUEST = 13, CHALLANGE_RESPONSE = 14, CHALLANGE_CANCEL = 15,
-                    LIST_GAME_HISTORY = 16};
+                    LIST_GAME_HISTORY = 16, GAME_DETAIL_REQUEST = 18};
 
 enum StatusCode {
   // 2xx: Successful responses

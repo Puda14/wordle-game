@@ -5,10 +5,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #define USER_TABLE "user"
 #define MAX_USERNAME_LEN 50
 #define MAX_PASSWORD_LEN 50
+#define MAX_ATTEMPTS 12
+#define WORD_LENGTH 5
+#define MAX_WORDS 15000
 
 typedef struct {
   int id;
@@ -18,6 +22,44 @@ typedef struct {
   int is_online;
 } User;
 
+typedef struct
+{
+  char player_name[50];
+  char guess[WORD_LENGTH + 1];
+  char result[WORD_LENGTH + 1];
+} PlayTurn;
+
+typedef struct
+{
+  char game_id[20];
+  char player1_name[50];
+  char player2_name[50];
+  char target_word[WORD_LENGTH + 1];
+  int current_player; // 1 or 2
+  int player1_attempts;
+  int player2_attempts;
+  int player1_score;
+  int player2_score;
+  bool used[WORD_LENGTH];
+  int game_active;
+  int current_attempts;
+  char start_time [20];
+  char end_time [20];
+  PlayTurn turns[MAX_ATTEMPTS];
+} GameSession;
+
+typedef struct {
+  char game_id[20];
+  char player1[50];
+  char player2[50];
+  int player1_score;
+  int player2_score;
+  char winner[51];
+  char word[WORD_LENGTH + 1];
+  PlayTurn moves[12];
+  char start_time[20];
+  char end_time[20];
+} GameHistory;
 
 int init_db(sqlite3 **db, const char *db_name);
 
@@ -42,5 +84,11 @@ int update_user_online(sqlite3 *db, const char *username);
 int update_user_offline(sqlite3 *db, const char *username);
 
 int list_users_online(sqlite3 *db, User *users, int *user_count);
+
+int save_game_history(sqlite3 *db, GameHistory *game);
+
+int get_game_history_by_player(sqlite3 *db, const char *player_name, GameHistory *response);
+
+int get_game_history_by_id(sqlite3 *db, const char *game_id, GameHistory *game_details);
 
 #endif
