@@ -33,6 +33,7 @@ typedef struct
 // Global variables
 char client_name[50];
 char client_password[50];
+int is_in_game = 0;
 
 static MessageQueue send_queue;
 static MessageQueue receive_queue;
@@ -213,6 +214,7 @@ void handle_game_start_response(Message *msg)
         sscanf(msg->payload, "%d|%d", &game_session_id, &player_num);
 
         printf("Game session %d started and you are player %d\n", game_session_id, player_num);
+        is_in_game = 1;
         init_game_state(game_session_id);
         // Switch to game view
         gtk_stack_set_visible_child_name(GTK_STACK(stack), "game");
@@ -305,8 +307,10 @@ void handle_game_guess_response(Message *msg)
         // Hiển thị thông báo chiến thắng cho người chơi
         if (current_player == player_num) {
             show_dialog("You Win! Congratulations!");
+            is_in_game = 0;
         } else {
             show_dialog("You lose! Better luck next time.");
+            is_in_game = 0;
         }
     } else if (strncmp(msg->payload, "DRAW", 4) == 0) {
         // Nếu là DRAW, có 2 phần: DRAW|p1_attempts|p2_attempts
@@ -442,6 +446,31 @@ void handle_game_detail_response(Message *msg) {
   // Run and destroy the dialog
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
+}
+
+void handle_game_end(Message *msg)
+{
+    if (msg->status == SUCCESS)
+    {   
+        char player_name[50];
+        sscanf(msg->payload, "%s", player_name);
+        if(strcmp(player_name, client_name) == 0)
+        {
+            show_dialog("You lose!");
+            is_in_game = 0;
+        }
+        else
+        {
+            show_dialog("You win! The opponent has left the game.");
+            is_in_game = 0;
+        }
+        
+        gtk_stack_set_visible_child_name(GTK_STACK(stack), "homepage");
+    }
+    else
+    {
+        show_error_dialog("Failed to end game");
+    }
 }
 
 // Add response handlers
@@ -928,6 +957,9 @@ gboolean process_network_response(gpointer data)
         case GAME_DETAIL_REQUEST:
             handle_game_detail_response(&msg);
             break;
+        case GAME_END:
+            handle_game_end(&msg);
+            break;
         }
     }
     return G_SOURCE_REMOVE;
@@ -1413,6 +1445,35 @@ void on_BackToHome_clicked(GtkButton *button, gpointer user_data)
     gtk_stack_set_visible_child_name(stack, "homepage");
 }
 
+void on_BackToHome_in_game_clicked(GtkButton *button, gpointer user_data)
+{
+    GtkStack *stack = GTK_STACK(user_data);
+    if (is_in_game == 1)
+    {
+        GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(button))),
+                                                   GTK_DIALOG_MODAL,
+                                                   GTK_MESSAGE_WARNING,
+                                                   GTK_BUTTONS_YES_NO,
+                                                   "You will lose the game if you leave. Are you sure you want to leave?");
+        int response = gtk_dialog_run(GTK_DIALOG(dialog));
+        gtk_widget_destroy(dialog);
+
+        if (response == GTK_RESPONSE_YES)
+        {
+            Message message;
+            message.message_type = GAME_END;
+            sprintf(message.payload, "%d|%s", game_session_id, client_name);
+            queue_push(&send_queue, &message);
+
+            gtk_stack_set_visible_child_name(stack, "homepage");
+        }
+    }
+    else
+    {
+        gtk_stack_set_visible_child_name(stack, "homepage");
+    }
+}
+
 void on_GoToHistory_clicked(GtkButton *button, gpointer user_data)
 {
     GtkStack *stack = GTK_STACK(user_data);
@@ -1509,7 +1570,7 @@ void set_signal_connect()
     button = GTK_WIDGET(gtk_builder_get_object(builder, "BackToHome1"));
     if (button)
     {
-        g_signal_connect(button, "clicked", G_CALLBACK(on_BackToHome_clicked), stack);
+        g_signal_connect(button, "clicked", G_CALLBACK(on_BackToHome_in_game_clicked), stack);
     }
 
     button = GTK_WIDGET(gtk_builder_get_object(builder, "BackToHome2"));
