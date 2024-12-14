@@ -562,7 +562,7 @@
               <object class="GtkButton" id="BackToHome2">
                 <property name="label" translatable="yes">Back to Home</property>
                 <property name="width-request">160</property>
-                <property name="height-request">60</property>
+                <property name="height-request">35</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
@@ -580,10 +580,13 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">History</property>
+                <attributes>
+                  <attribute name="font-desc" value="Sans Bold 16"/>
+                </attributes>
               </object>
               <packing>
-                <property name="x">616</property>
-                <property name="y">35</property>
+                <property name="x">651</property>
+                <property name="y">23</property>
               </packing>
             </child>
             <child>
@@ -594,36 +597,36 @@
                 <property name="can-focus">False</property>
               </object>
               <packing>
-                <property name="x">440</property>
-                <property name="y">154</property>
+                <property name="x">484</property>
+                <property name="y">156</property>
               </packing>
             </child>
             <child>
               <object class="GtkButton" id="send_rechallenge_button">
                 <property name="label" translatable="yes">Send re-challenger</property>
                 <property name="width-request">200</property>
-                <property name="height-request">52</property>
+                <property name="height-request">40</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
               </object>
               <packing>
-                <property name="x">117</property>
-                <property name="y">182</property>
+                <property name="x">192</property>
+                <property name="y">154</property>
               </packing>
             </child>
             <child>
               <object class="GtkButton" id="view_history_button">
                 <property name="label" translatable="yes">View history</property>
                 <property name="width-request">200</property>
-                <property name="height-request">52</property>
+                <property name="height-request">40</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
               </object>
               <packing>
-                <property name="x">120</property>
-                <property name="y">247</property>
+                <property name="x">192</property>
+                <property name="y">235</property>
               </packing>
             </child>
           </object>
