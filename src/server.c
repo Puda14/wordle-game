@@ -8,7 +8,6 @@
 #include <sys/select.h>
 #include <sqlite3.h>
 #include <time.h>
-#include <stdbool.h>
 #include "database.h"
 #include "./model/message.h"
 
@@ -16,55 +15,9 @@
 #define MAX_CLIENTS 30
 #define BUFFER_SIZE 1024
 #define DB_FILE "database.db"
-#define WORD_LENGTH 5
-#define MAX_WORDS 15000
-#define MAX_ATTEMPTS 12
 
 volatile sig_atomic_t got_signal = 0;
 sqlite3 *db;
-
-typedef struct
-{
-  char player_name[50];
-  char guess[WORD_LENGTH + 1];
-  char result[WORD_LENGTH + 1];
-} PlayTurn;
-
-typedef struct
-{
-  char game_id[20];
-  char player1_name[50];
-  char player2_name[50];
-  char target_word[WORD_LENGTH + 1];
-  int current_player; // 1 or 2
-  int player1_attempts;
-  int player2_attempts;
-  int player1_score;
-  int player2_score;
-  bool used[WORD_LENGTH];
-  int game_active;
-  int current_attempts;
-  char start_time [20];
-  char end_time [20];
-  PlayTurn turns[MAX_ATTEMPTS];
-} GameSession;
-
-typedef struct{
-  char game_id[20];
-  char player1_name[50];
-  char player2_name[50];
-  char target_word[WORD_LENGTH + 1];
-  int player1_attempts;
-  int player2_attempts;
-  int player1_score;
-  int player2_score;
-  int game_result;
-  int current_attempts;
-  char start_time [20];
-  char end_time [20];
-  PlayTurn turns[MAX_ATTEMPTS];
-}GameHistory;
-
 
 void get_time_as_string(char *buffer, size_t buffer_size) {
     time_t raw_time;
@@ -653,34 +606,46 @@ void handle_message(int client_sock, Message *message)
       send(get_player_sock(session->player1_name), &turn_message, sizeof(Message), 0);
       send(get_player_sock(session->player2_name), &turn_message, sizeof(Message), 0);
       get_time_as_string(session->end_time, sizeof(session->end_time));
+
       // Save game history
-      /*
-      TODO : Save game history from game session
-      */
       GameHistory game_history;
       strcpy(game_history.game_id, session->game_id);
-      strcpy(game_history.player1_name, session->player1_name);
-      strcpy(game_history.player2_name, session->player2_name);
-      strcpy(game_history.target_word, session->target_word);
-      game_history.player1_attempts = session->player1_attempts;
-      game_history.player2_attempts = session->player2_attempts;
+      strcpy(game_history.player1, session->player1_name);
+      strcpy(game_history.player2, session->player2_name);
+      strcpy(game_history.word, session->target_word);
       game_history.player1_score = session->player1_score;
       game_history.player2_score = session->player2_score;
+
       if(player_num == 1){
-        game_history.game_result = 1;
+        strcpy(game_history.winner, session->player1_name);
       }else if(player_num == 2){
-        game_history.game_result = 2;
+        strcpy(game_history.winner, session->player2_name);
       }else{
-        game_history.game_result = 0;
+        strcpy(game_history .winner, "DRAW");
       }
-      game_history.current_attempts = session->current_attempts;
+
       strcpy(game_history.start_time, session->start_time);
       strcpy(game_history.end_time, session->end_time);
-      memcpy(game_history.turns, session->turns, sizeof(session->turns));
-      //Save game history to db
-      /*
-      TODO: Save game history to database
-      */
+
+      // Copy the turns from GameSession to GameHistory
+      for (int i = 0; i < MAX_ATTEMPTS; i++) {
+        if (strlen(session->turns[i].guess) == 0) {
+          break;
+        }
+
+        strcpy(game_history.moves[i].player_name, session->turns[i].player_name);
+        strcpy(game_history.moves[i].guess, session->turns[i].guess);
+        strcpy(game_history.moves[i].result, session->turns[i].result);
+      }
+
+      // Save game history and moves to the database
+      int rc = save_game_history(db, &game_history);
+      if (rc != SQLITE_OK) {
+          printf("Failed to save game history to the database: %d\n", rc);
+      } else {
+          printf("Game history saved successfully.\n");
+      }
+
       clear_game_session(session_id);
     }
     else
@@ -703,6 +668,76 @@ void handle_message(int client_sock, Message *message)
     sscanf(message->payload, "%d|%49s", &session_id, player_name);
 
     GameSession *session = &game_sessions[session_id];
+  } else if (message->message_type == LIST_GAME_HISTORY){
+    char client_name[50] = {0};
+    sscanf(message->payload, "%49s", client_name);
+
+    GameHistory history_list[10];
+    int history_count = 0;
+
+    int rc = get_game_histories_by_player(db, client_name, history_list, &history_count);
+
+    if (rc == SQLITE_OK) {
+      char response[2048] = {0};
+      char buffer[256];
+
+      for (int i = 0; i < history_count; i++) {
+        snprintf(buffer, sizeof(buffer),
+                "Game ID: %s | %s vs %s | Winner: %s | Score: %d-%d\n",
+                history_list[i].game_id, history_list[i].player1, history_list[i].player2,
+                history_list[i].winner, history_list[i].player1_score, history_list[i].player2_score);
+
+        strncat(response, buffer, sizeof(response) - strlen(response) - 1);
+      }
+
+      if (strlen(response) > 1) {
+        response[strlen(response) - 1] = '\0';  // Remove trailing newline
+      }
+
+      strcpy(message->payload, response);
+      message->status = SUCCESS;
+    } else if (rc == NOT_FOUND) {
+      message->status = NOT_FOUND;
+      strcpy(message->payload, "No game history found.");
+    } else {
+      message->status = INTERNAL_SERVER_ERROR;
+      strcpy(message->payload, "Internal server error occurred.");
+    }
+
+    send(client_sock, message, sizeof(Message), 0);
+  } else if (message->message_type == GAME_DETAIL_REQUEST) {
+    char game_id[20] = {0};
+    sscanf(message->payload, "%19s", game_id);
+
+    GameHistory game_details;
+    if (get_game_history_by_id(db, game_id, &game_details) != SQLITE_OK) {
+      message->status = NOT_FOUND;
+      snprintf(message->payload, sizeof(message->payload), "Game ID %s not found.", game_id);
+    } else {
+      // Serialize game details into the payload
+      char response[2048] = {0};
+      snprintf(response, sizeof(response),
+              "%s|%s|%s|%d|%d|%s|%s|%s|%s\nMoves:\n",
+              game_details.game_id, game_details.player1, game_details.player2,
+              game_details.player1_score, game_details.player2_score,
+              game_details.winner, game_details.word,
+              game_details.start_time, game_details.end_time);
+
+      for (int i = 0; i < 12; i++) {
+        if (strlen(game_details.moves[i].guess) == 0) break;
+        char move[256];
+        snprintf(move, sizeof(move), "%s|%s|%s\n",
+                game_details.moves[i].player_name,
+                game_details.moves[i].guess,
+                game_details.moves[i].result);
+        strncat(response, move, sizeof(response) - strlen(response) - 1);
+      }
+
+      strcpy(message->payload, response);
+      message->status = SUCCESS;
+    }
+
+    send(client_sock, message, sizeof(Message), 0);
   } else if (message->message_type == GAME_END){
     printf("Received game end\n");
     printf("Payload: %s\n", message->payload);
