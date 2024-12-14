@@ -458,6 +458,8 @@
               </packing>
             </child>
             <child>
+            </child>
+            <child>
               <!-- n-columns=3 n-rows=3 -->
               <object class="GtkGrid" id="wordle_grid">
                 <property name="width-request">335</property>
