@@ -83,6 +83,8 @@ int update_user_online(sqlite3 *db, const char *username);
 
 int update_user_offline(sqlite3 *db, const char *username);
 
+int update_user_score(sqlite3 *db, const char *username, int score);
+
 int list_users_online(sqlite3 *db, User *users, int *user_count);
 
 int list_users_closest_score(sqlite3 *db, const char *target_username, User *users, int *user_count);
@@ -90,6 +92,8 @@ int list_users_closest_score(sqlite3 *db, const char *target_username, User *use
 int save_game_history(sqlite3 *db, GameHistory *game);
 
 int get_game_history_by_player(sqlite3 *db, const char *player_name, GameHistory *response);
+
+int get_game_histories_by_player(sqlite3 *db, const char *player_name, GameHistory *history_list, int *history_count);
 
 int get_game_history_by_id(sqlite3 *db, const char *game_id, GameHistory *game_details);
 

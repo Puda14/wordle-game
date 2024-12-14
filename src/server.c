@@ -807,7 +807,6 @@ void handle_message(int client_sock, Message *message)
       send(get_player_sock(session->player1_name), &end_message, sizeof(Message), 0);
       send(get_player_sock(session->player2_name), &end_message, sizeof(Message), 0);
       // Save game history
-            // Save game history
       GameHistory game_history;
       strcpy(game_history.game_id, session->game_id);
       strcpy(game_history.player1, session->player1_name);
@@ -849,16 +848,99 @@ void handle_message(int client_sock, Message *message)
 }
 }
 
+void handle_client_disconnect(int client_sock) {
+    char disconnected_player[50];
+    int player_index = -1;
+
+    // Find the disconnected player
+    for (int i = 0; i < player_count; i++) {
+        if (player_list[i].player_sock == client_sock) {
+            strcpy(disconnected_player, player_list[i].player_name);
+            player_index = i;
+            break;
+        }
+    }
+
+    if (player_index == -1) {
+        printf("Disconnected player not found\n");
+        return;
+    }
+
+    // Remove the player from the player list
+    for (int i = player_index; i < player_count - 1; i++) {
+        player_list[i] = player_list[i + 1];
+    }
+    player_count--;
+
+    // Check if the player was in an active game session
+    for (int i = 0; i < MAX_SESSIONS; i++) {
+        GameSession *session = &game_sessions[i];
+        if (session->game_active && 
+            (strcmp(session->player1_name, disconnected_player) == 0 || 
+             strcmp(session->player2_name, disconnected_player) == 0)) {
+            
+            // Determine the opponent
+            const char *opponent = strcmp(session->player1_name, disconnected_player) == 0 ? 
+                                   session->player2_name : session->player1_name;
+            int opponent_sock = get_player_sock(opponent);
+
+            // Notify the opponent that they win
+            Message message;
+            message.message_type = GAME_END;
+            message.status = SUCCESS;
+            sprintf(message.payload, "%s", disconnected_player);
+            send(opponent_sock, &message, sizeof(Message), 0);
+            GameHistory game_history;
+            strcpy(game_history.game_id, session->game_id);
+            strcpy(game_history.player1, session->player1_name);
+            strcpy(game_history.player2, session->player2_name);
+            strcpy(game_history.word, session->target_word);
+            game_history.player1_score = session->player1_score;
+            game_history.player2_score = session->player2_score;
+
+            if(strcmp(disconnected_player, session->player1_name) == 0){
+              strcpy(game_history.winner, session->player2_name);
+            }else{
+              strcpy(game_history.winner, session->player1_name);
+            }
+
+            strcpy(game_history.start_time, session->start_time);
+            strcpy(game_history.end_time, session->end_time);
+
+            // Copy the turns from GameSession to GameHistory
+            for (int i = 0; i < MAX_ATTEMPTS; i++) {
+              if (strlen(session->turns[i].guess) == 0) {
+                break;
+              }
+
+              strcpy(game_history.moves[i].player_name, session->turns[i].player_name);
+              strcpy(game_history.moves[i].guess, session->turns[i].guess);
+              strcpy(game_history.moves[i].result, session->turns[i].result);
+            }
+
+            // Save game history and moves to the database
+            int rc = save_game_history(db, &game_history);
+            if (rc != SQLITE_OK) {
+                printf("Failed to save game history to the database: %d\n", rc);
+            } else {
+                printf("Game history saved successfully.\n");
+            }
+            // Clear the game session
+            clear_game_session(i);
+            break;
+        }
+    }
+
+    printf("Player %s disconnected\n", disconnected_player);
+    close(client_sock);
+}
+
 void init_game_sessions()
 {
   for (int i = 0; i < MAX_SESSIONS; i++)
   {
     game_sessions[i].game_active = 0;
   }
-}
-
-void handle_game_message(int client_sock, Message *message)
-{
 }
 
 int initialize_server(int *server_sock, struct sockaddr_in *server_addr)
@@ -1099,6 +1181,7 @@ int main()
         int read_size = recv(sock, &message, sizeof(Message), 0);
         if (read_size == 0)
         {
+          handle_client_disconnect(sock);
           // Client disconnected
           close(sock);
           client_socks[i] = 0;
