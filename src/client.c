@@ -146,6 +146,11 @@ int receive_message(int sockfd, Message *msg)
         perror("Receive failed");
         return -1;
     }
+    if (bytes_received == 0)
+    {
+        printf("Connection closed by server\n");
+        return -1;
+    }
     printf("Received message of type %d, content: %s, status: %d\n", msg->message_type, msg->payload, msg->status);
     return 0;
 }
@@ -943,6 +948,22 @@ void on_send_rechallenge_clicked(GtkButton *button, gpointer user_data) {
   show_dialog(dialog_message);
 }
 
+void handle_disconnected_from_server(){
+    // Show error dialog
+    show_error_dialog("Disconnected from server. Please log in again.");
+
+    // Navigate back to the login stack
+    GtkStack *stack = GTK_STACK(gtk_builder_get_object(builder, "stack"));
+    if (stack) {
+        gtk_stack_set_visible_child_name(stack, "login");
+    } else {
+        g_print("Error: Could not find stack widget\n");
+    }
+
+    // Clean up resources and reset state if necessary
+    network_running = 0;
+}
+
 // UI thread network response handler
 gboolean process_network_response(gpointer data)
 {
@@ -1037,6 +1058,10 @@ void *network_thread_func(void *arg) {
             if (receive_message(sockfd, &recv_msg) == 0) {
                 queue_push(&receive_queue, &recv_msg);
                 gdk_threads_add_idle(process_network_response, NULL);
+            }else{
+                g_print("Failed to receive message\n");
+                gdk_threads_add_idle((GSourceFunc)handle_disconnected_from_server, NULL);
+                break;
             }
         }
 
