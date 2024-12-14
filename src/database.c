@@ -288,7 +288,6 @@ int update_user_offline(sqlite3 *db, const char *username) {
 }
 
 int list_users_online(sqlite3 *db, User *users, int *user_count) {
-  // Câu lệnh SQL lấy danh sách người dùng online
   const char *sql = "SELECT id, username, score, isOnline FROM user WHERE isOnline = 1";
   sqlite3_stmt *stmt;
   int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
@@ -300,13 +299,11 @@ int list_users_online(sqlite3 *db, User *users, int *user_count) {
 
   int count = 0;
 
-  // Duyệt qua kết quả truy vấn
   while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
-    if (count >= 10) {
-      break;  // Giới hạn số lượng người dùng trả về là 10
+    if (count >= 20) {
+      break;
     }
 
-    // Lấy dữ liệu từ các cột của dòng
     users[count].id = sqlite3_column_int(stmt, 0);
     strncpy(users[count].username, (const char *)sqlite3_column_text(stmt, 1), sizeof(users[count].username) - 1);
     users[count].score = sqlite3_column_int(stmt, 2);
@@ -315,7 +312,71 @@ int list_users_online(sqlite3 *db, User *users, int *user_count) {
     count++;
   }
 
-  *user_count = count;  // Trả về số lượng người dùng online
+  *user_count = count;
+
+  sqlite3_finalize(stmt);
+  return SQLITE_OK;
+}
+
+int list_users_closest_score(sqlite3 *db, const char *target_username, User *users, int *user_count) {
+  // Lấy điểm số của username được truyền vào
+  const char *sql_get_score = "SELECT score FROM user WHERE username = ?";
+  sqlite3_stmt *stmt;
+  int target_score = 0;
+  int rc = sqlite3_prepare_v2(db, sql_get_score, -1, &stmt, 0);
+
+  if (rc != SQLITE_OK) {
+    fprintf(stderr, "Failed to prepare statement for getting score: %s\n", sqlite3_errmsg(db));
+    return rc;
+  }
+
+  // Gán giá trị cho tham số truy vấn
+  sqlite3_bind_text(stmt, 1, target_username, -1, SQLITE_STATIC);
+
+  // Lấy điểm số của user
+  if (sqlite3_step(stmt) == SQLITE_ROW) {
+    target_score = sqlite3_column_int(stmt, 0);
+  } else {
+    sqlite3_finalize(stmt);
+    fprintf(stderr, "Username not found or no score available.\n");
+    return SQLITE_NOTFOUND;  // Trả về nếu username không tồn tại
+  }
+  sqlite3_finalize(stmt);
+
+  // Truy vấn danh sách 20 user có điểm số gần nhất với điểm số của target
+  const char *sql_get_closest_users =
+    "SELECT id, username, score, isOnline "
+    "FROM user "
+    "WHERE username != ? "
+    "ORDER BY ABS(score - ?) ASC LIMIT 20";
+
+  rc = sqlite3_prepare_v2(db, sql_get_closest_users, -1, &stmt, 0);
+  if (rc != SQLITE_OK) {
+    fprintf(stderr, "Failed to prepare statement for getting closest users: %s\n", sqlite3_errmsg(db));
+    return rc;
+  }
+
+  // Gán giá trị cho các tham số truy vấn
+  sqlite3_bind_text(stmt, 1, target_username, -1, SQLITE_STATIC);
+  sqlite3_bind_int(stmt, 2, target_score);
+
+  int count = 0;
+
+  // Duyệt qua kết quả truy vấn
+  while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+    if (count >= 20) {
+      break;  // Giới hạn tối đa là 20 user
+    }
+
+    users[count].id = sqlite3_column_int(stmt, 0);
+    strncpy(users[count].username, (const char *)sqlite3_column_text(stmt, 1), sizeof(users[count].username) - 1);
+    users[count].score = sqlite3_column_int(stmt, 2);
+    users[count].is_online = sqlite3_column_int(stmt, 3);
+
+    count++;
+  }
+
+  *user_count = count;  // Trả về số lượng user tìm được
 
   sqlite3_finalize(stmt);
   return SQLITE_OK;
@@ -560,6 +621,34 @@ int get_game_history_by_id(sqlite3 *db, const char *game_id, GameHistory *game_d
   sqlite3_finalize(stmt);
   return SQLITE_DONE; // Game not found
 }
+
+int get_score_by_username(sqlite3 *db, const char *username, int *score) {
+    const char *sql = "SELECT score FROM user WHERE username = ?";
+    sqlite3_stmt *stmt;
+
+    // Chuẩn bị câu truy vấn
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        return rc;
+    }
+
+    // Gán giá trị cho tham số
+    sqlite3_bind_text(stmt, 1, username, -1, SQLITE_STATIC);
+
+    // Thực thi truy vấn
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        *score = sqlite3_column_int(stmt, 0);  // Lấy điểm từ cột 0
+        rc = SQLITE_OK;
+    } else {
+        rc = SQLITE_NOTFOUND;  // Không tìm thấy user
+    }
+
+    // Dọn dẹp
+    sqlite3_finalize(stmt);
+    return rc;
+}
+
 
 // int save_game_history_to_db(sqlite3 *db, GameHistory *history) {
 //     char *sql = "INSERT INTO game_history (game_id, player1, player2, word, result, moves, move_count) VALUES (?, ?, ?, ?, ?, ?, ?);";

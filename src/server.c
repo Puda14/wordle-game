@@ -341,12 +341,34 @@ void handle_message(int client_sock, Message *message)
         strcpy(message->payload, "Logout failed");
     }
     send(client_sock, message, sizeof(Message), 0);
-  } else if (message->message_type == LIST_USER) {
-    User users[10];
+  } else if( message->message_type == GET_SCORE_BY_USER_REQUEST){
+    char client_name[50] = {0};
+    sscanf(message->payload, "%s", client_name);
+
+    int score = 0;
+    int rc = get_score_by_username(db, client_name, &score);
+
+    if (rc == SQLITE_OK) {
+        message->status = SUCCESS;
+        snprintf(message->payload, sizeof(message->payload), "%d", score);
+    } else if (rc == SQLITE_NOTFOUND) {
+        message->status = NOT_FOUND;
+        strcpy(message->payload, "User not found");
+    } else {
+        message->status = INTERNAL_SERVER_ERROR;
+        strcpy(message->payload, "Error retrieving score");
+    }
+
+    send(client_sock, message, sizeof(Message), 0);
+  }
+  else if (message->message_type == LIST_USER) {
+    char username[50];
+    sscanf(message->payload, "%s", username);
+
+    User users[20];
     int user_count = 0;
 
-    int rc = list_users_online(db, users, &user_count);
-
+    int rc = list_users_closest_score(db, username, users, &user_count);
     if (rc == SQLITE_OK) {
       char response[2048] = {0};
       char buffer[128];
@@ -823,7 +845,6 @@ void handle_message(int client_sock, Message *message)
       }
 
       clear_game_session(session_id);
-      
   }
 }
 }
