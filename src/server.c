@@ -780,14 +780,47 @@ void handle_message(int client_sock, Message *message)
 
       Message end_message;
       end_message.message_type = GAME_END;
+      end_message.status = SUCCESS;
       sprintf(end_message.payload, "%s",player_name);
       send(get_player_sock(session->player1_name), &end_message, sizeof(Message), 0);
       send(get_player_sock(session->player2_name), &end_message, sizeof(Message), 0);
       // Save game history
-      /*
-      TODO : Save game history from game session
-      */
-      //Save game history to db
+            // Save game history
+      GameHistory game_history;
+      strcpy(game_history.game_id, session->game_id);
+      strcpy(game_history.player1, session->player1_name);
+      strcpy(game_history.player2, session->player2_name);
+      strcpy(game_history.word, session->target_word);
+      game_history.player1_score = session->player1_score;
+      game_history.player2_score = session->player2_score;
+
+      if(strcmp(player_name, session->player1_name) == 0){
+        strcpy(game_history.winner, session->player2_name);
+      }else{
+        strcpy(game_history.winner, session->player1_name);
+      }
+
+      strcpy(game_history.start_time, session->start_time);
+      strcpy(game_history.end_time, session->end_time);
+
+      // Copy the turns from GameSession to GameHistory
+      for (int i = 0; i < MAX_ATTEMPTS; i++) {
+        if (strlen(session->turns[i].guess) == 0) {
+          break;
+        }
+
+        strcpy(game_history.moves[i].player_name, session->turns[i].player_name);
+        strcpy(game_history.moves[i].guess, session->turns[i].guess);
+        strcpy(game_history.moves[i].result, session->turns[i].result);
+      }
+
+      // Save game history and moves to the database
+      int rc = save_game_history(db, &game_history);
+      if (rc != SQLITE_OK) {
+          printf("Failed to save game history to the database: %d\n", rc);
+      } else {
+          printf("Game history saved successfully.\n");
+      }
 
       clear_game_session(session_id);
       
