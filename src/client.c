@@ -34,6 +34,8 @@ typedef struct
 char client_name[50];
 char client_password[50];
 int is_in_game = 0;
+GtkLabel *ClientNameLabel;  // Label for client name
+GtkLabel *ScoreLabel;       // Label for score
 
 static MessageQueue send_queue;
 static MessageQueue receive_queue;
@@ -181,6 +183,18 @@ int init_tcp_socket(const char *server_ip, int port)
     }
     printf("Connecting to server %s:%d\n", server_ip, port);
     return sockfd;
+}
+
+void update_client_name_label() {
+    ClientNameLabel = GTK_LABEL(gtk_builder_get_object(builder, "ClientNameLabel"));
+    gtk_label_set_text(GTK_LABEL(ClientNameLabel), client_name);
+}
+
+void update_score_label() {
+    Message message;
+    message.message_type = GET_SCORE_BY_USER_REQUEST;
+    snprintf(message.payload, sizeof(message.payload), "%s", client_name);
+    queue_push(&send_queue, &message);
 }
 
 //Hanlde for game score
@@ -451,7 +465,7 @@ void handle_game_detail_response(Message *msg) {
 void handle_game_end(Message *msg)
 {
     if (msg->status == SUCCESS)
-    {   
+    {
         char player_name[50];
         sscanf(msg->payload, "%s", player_name);
         if(strcmp(player_name, client_name) == 0)
@@ -464,7 +478,9 @@ void handle_game_end(Message *msg)
             show_dialog("You win! The opponent has left the game.");
             is_in_game = 0;
         }
-        
+
+        update_client_name_label();
+        update_score_label();
         gtk_stack_set_visible_child_name(GTK_STACK(stack), "homepage");
     }
     else
@@ -484,6 +500,15 @@ void handle_game_get_target_response(Message *msg)
     else
     {
         g_print("Failed to get target word\n");
+    }
+}
+
+void handle_get_score_by_user_response(Message *msg){
+    ScoreLabel = GTK_LABEL(gtk_builder_get_object(builder, "ScoreLabel"));
+    if (msg->status == SUCCESS) {
+        gtk_label_set_text(GTK_LABEL(ScoreLabel), msg->payload);
+    } else {
+        gtk_label_set_text(GTK_LABEL(ScoreLabel), "Error retrieving score");
     }
 }
 
@@ -562,8 +587,8 @@ void handle_list_user(Message *msg)
         g_print("Error in list user response\n");
         return;
     }
-    User user_list[10];
-    int user_count = parse_user_list(msg->payload, user_list, 10);
+    User user_list[20];
+    int user_count = parse_user_list(msg->payload, user_list, 20);
 
     // Hiển thị danh sách người dùng đã phân tích
     printf("Received %d users:\n", user_count);
@@ -960,6 +985,8 @@ gboolean process_network_response(gpointer data)
         case GAME_END:
             handle_game_end(&msg);
             break;
+        case GET_SCORE_BY_USER_REQUEST:
+            handle_get_score_by_user_response(&msg);
         }
     }
     return G_SOURCE_REMOVE;
@@ -1155,8 +1182,10 @@ void on_LoginSubmit_clicked(GtkButton *button, gpointer user_data)
                 if (stack) {
                     Message message;
                     message.message_type = LIST_USER;
-                    sprintf(message.payload, "%s", "");
+                    sprintf(message.payload, "%s", client_name);
                     queue_push(&send_queue, &message);
+                    update_client_name_label();
+                    update_score_label();
                     gtk_stack_set_visible_child_name(stack, "homepage");
                 } else {
                     g_print("Stack widget is null\n");
@@ -1259,6 +1288,14 @@ void on_SignupSubmit_clicked(GtkButton *button, gpointer user_data){
     if (timeout >= 10) {
         show_error_dialog("Signup failed: Timeout");
     }
+}
+
+void on_ReloadUserOnlineSubmit_clicked(GtkButton *button, gpointer user_data){
+    g_print("Reload user online submit clicked\n");
+    Message message;
+    message.message_type = LIST_USER;
+    sprintf(message.payload, "%s", client_name);
+    queue_push(&send_queue, &message);
 }
 
 // Add new function for resetting game state
@@ -1428,20 +1465,22 @@ void on_PlayGame_clicked(GtkButton *button, gpointer user_data)
         show_error_dialog("Please enter the opponent's name.");
         return;
     }
-    // Initialize message properly
-    Message message;
-    memset(&message, 0, sizeof(Message)); // Clear message structure
-    message.message_type = GAME_START;
-    message.status = 0;          // No status for initial request
-     // Payload chứa tên player và tên đối thủ
-    snprintf(message.payload, sizeof(message.payload), "%s|%s", client_name, opponent_name);
-    // Push game start request to send queue
-    queue_push(&send_queue, &message);
+
+    // Send challenge request
+    Message msg;
+    memset(&msg, 0, sizeof(msg));
+    msg.message_type = CHALLANGE_REQUEST;
+    sprintf(msg.payload, "CHALLANGE_REQUEST|%s|%s", client_name, opponent_name);
+
+    queue_push(&send_queue, &msg);
+    char *dialog_message = g_strdup_printf("Challenge sent to %s", opponent_name);
+    show_dialog(dialog_message);
 }
 
 void on_BackToHome_clicked(GtkButton *button, gpointer user_data)
 {
     GtkStack *stack = GTK_STACK(user_data);
+    update_client_name_label();update_score_label();
     gtk_stack_set_visible_child_name(stack, "homepage");
 }
 
@@ -1464,12 +1503,13 @@ void on_BackToHome_in_game_clicked(GtkButton *button, gpointer user_data)
             message.message_type = GAME_END;
             sprintf(message.payload, "%d|%s", game_session_id, client_name);
             queue_push(&send_queue, &message);
-
+            update_client_name_label();update_score_label();
             gtk_stack_set_visible_child_name(stack, "homepage");
         }
     }
     else
     {
+        update_client_name_label();update_score_label();
         gtk_stack_set_visible_child_name(stack, "homepage");
     }
 }
@@ -1601,6 +1641,12 @@ void set_signal_connect()
     if (button)
     {
         g_signal_connect(button, "clicked", G_CALLBACK(on_send_rechallenge_clicked), stack);
+    }
+
+    button = GTK_WIDGET(gtk_builder_get_object(builder, "ReloadUserOnlineButton"));
+    if (button)
+    {
+        g_signal_connect(button, "clicked", G_CALLBACK(on_ReloadUserOnlineSubmit_clicked), stack);
     }
 }
 

@@ -63,7 +63,36 @@ int insert_sample_data(sqlite3 *db) {
     "('StormRider', '123', 400, 0), "
     "('ViperVenom', '123', 450, 1), "
     "('DragonSoul', '123', 500, 0), "
-    "('ThunderStrike', '123', 550, 1);";
+    "('ThunderStrike', '123', 550, 1), "
+    "('PhantomRogue', '123', 600, 1), "
+    "('InfernoBlaze', '123', 650, 1), "
+    "('CrystalSage', '123', 700, 1), "
+    "('ShadowClaw', '123', 750, 1), "
+    "('NightHowl', '123', 800, 1), "
+    "('FrostFang', '123', 850, 1), "
+    "('IronHammer', '123', 900, 1), "
+    "('SkyBreaker', '123', 950, 1), "
+    "('PhoenixWing', '123', 1000, 1), "
+    "('SilentArrow', '123', 1050, 1), "
+    "('EclipseShade', '123', 1100, 1), "
+    "('SilverWolf', '123', 1150, 1), "
+    "('GoldenStreak', '123', 1200, 1), "
+    "('FlameHeart', '123', 1250, 1), "
+    "('VenomBlade', '123', 1300, 1), "
+    "('DuskWarden', '123', 1350, 1), "
+    "('FireFury', '123', 1400, 1), "
+    "('SpectralGhost', '123', 1450, 1), "
+    "('SoulEater', '123', 1500, 1), "
+    "('ShadowWraith', '123', 1550, 1), "
+    "('OblivionKnight', '123', 1600, 1), "
+    "('NebulaHunter', '123', 1650, 1), "
+    "('GalacticRider', '123', 1700, 1), "
+    "('StarlightSage', '123', 1750, 1), "
+    "('SolarFlare', '123', 1800, 1), "
+    "('FallenAngel', '123', 1850, 1), "
+    "('BlizzardKing', '123', 1900, 1), "
+    "('VoidWalker', '123', 1950, 1), "
+    "('CrimsonFang', '123', 2000, 1);";
 
   char *errMsg = 0;
   int rc = sqlite3_exec(db, sql_insert, 0, 0, &errMsg);
@@ -77,6 +106,7 @@ int insert_sample_data(sqlite3 *db) {
   printf("Sample data inserted successfully.\n");
   return SQLITE_OK;
 }
+
 
 int create_game_history_table(sqlite3 *db) {
   const char *sql_create =
