@@ -1469,6 +1469,12 @@ void on_PlayGame_clicked(GtkButton *button, gpointer user_data){
     return;
   }
 
+  // Validate that the opponent is not the client itself
+  if (strcmp(opponent_name, client_name) == 0) {
+    show_error_dialog("Cannot challenge yourself!");
+    return;
+  }
+
   // Send challenge request
   Message msg;
   memset(&msg, 0, sizeof(msg)); // Clear the message structure
