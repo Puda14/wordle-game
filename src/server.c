@@ -755,11 +755,24 @@ void handle_message(int client_sock, Message *message){
       sscanf(message->payload, "CHALLANGE_REQUEST|%49[^|]|%49s", player1, player2);
       int player1_sock = get_player_sock(player1);
       int player2_sock = get_player_sock(player2);
+      // Check if players are online
       if(player1_sock == -1 || player2_sock == -1){
         message->status = BAD_REQUEST;
         strcpy(message->payload, "Player not found");
         send(client_sock, message, sizeof(Message), 0);
         return;
+      }
+       // Check if players are already in a game
+      for (int i = 0; i < MAX_SESSIONS; i++) {
+          GameSession *session = &game_sessions[i];
+          if (session->game_active &&
+              (strcmp(session->player1_name, player1) == 0 || strcmp(session->player2_name, player1) == 0 ||
+              strcmp(session->player1_name, player2) == 0 || strcmp(session->player2_name, player2) == 0)) {
+              message->status = BAD_REQUEST;
+              strcpy(message->payload, "One or both players are already in a game");
+              send(client_sock, message, sizeof(Message), 0);
+              return;
+          }
       }
       message->status = SUCCESS;
       send(player1_sock, message, sizeof(Message), 0);
