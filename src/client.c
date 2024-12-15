@@ -657,6 +657,12 @@ void handle_challange_request(Message *msg) {
   char challenger[50], challenged[50];
   sscanf(msg->payload, "CHALLANGE_REQUEST|%[^|]|%s", challenger, challenged);
 
+  if(msg->status != SUCCESS){
+    g_print("Error in challenge request: %s\n", msg->payload);
+    show_error_dialog(msg->payload);
+    return;
+  }
+
   // Show dialog only if we're the challenged player
   if (strcmp(challenged, client_name) == 0) {
     GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(window),
