@@ -455,7 +455,7 @@ int initialize_server(int *server_sock, struct sockaddr_in *server_addr){
   }
 
   // Start listening for incoming client connections
-  if (listen(*server_sock, 3) < 0)
+  if (listen(*server_sock, 30) < 0)
   {
     perror("Listen failed");
     exit(EXIT_FAILURE);
