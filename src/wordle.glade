@@ -47,6 +47,8 @@
                 <property name="height-request">50</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
+                <property name="visibility">False</property>
+                <property name="invisible-char">*</property>
               </object>
               <packing>
                 <property name="x">595</property>
@@ -223,6 +225,8 @@
                 <property name="height-request">50</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
+                <property name="visibility">False</property>
+                <property name="invisible-char">*</property>
               </object>
               <packing>
                 <property name="x">595</property>
@@ -251,6 +255,8 @@
                 <property name="height-request">50</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
+                <property name="visibility">False</property>
+                <property name="invisible-char">*</property>
               </object>
               <packing>
                 <property name="x">595</property>
