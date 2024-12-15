@@ -61,6 +61,20 @@ typedef struct {
   char end_time[20];
 } GameHistory;
 
+typedef struct
+{
+  char player_name[50]; // Player's name
+  int player_sock;      // Player's socket
+} PlayerInfo;
+
+// Game state structure
+typedef struct
+{
+  char target_word[WORD_LENGTH + 1];
+  int attempts_left;
+  int game_won;
+} GameState;
+
 int init_db(sqlite3 **db, const char *db_name);
 
 int create_user(sqlite3 *db, const User *user);
