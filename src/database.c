@@ -319,7 +319,7 @@ int list_users_online(sqlite3 *db, User *users, int *user_count) {
 }
 
 int list_users_closest_score(sqlite3 *db, const char *target_username, User *users, int *user_count) {
-  // Lấy điểm số của username được truyền vào
+  // Retrieve the score of the provided username
   const char *sql_get_score = "SELECT score FROM user WHERE username = ?";
   sqlite3_stmt *stmt;
   int target_score = 0;
@@ -330,20 +330,20 @@ int list_users_closest_score(sqlite3 *db, const char *target_username, User *use
     return rc;
   }
 
-  // Gán giá trị cho tham số truy vấn
+  // Bind the value to the query parameter
   sqlite3_bind_text(stmt, 1, target_username, -1, SQLITE_STATIC);
 
-  // Lấy điểm số của user
+  // Retrieve the score of the user
   if (sqlite3_step(stmt) == SQLITE_ROW) {
     target_score = sqlite3_column_int(stmt, 0);
   } else {
     sqlite3_finalize(stmt);
     fprintf(stderr, "Username not found or no score available.\n");
-    return SQLITE_NOTFOUND;  // Trả về nếu username không tồn tại
+    return SQLITE_NOTFOUND;  // Return if the username does not exist
   }
   sqlite3_finalize(stmt);
 
-  // Truy vấn danh sách 20 user có điểm số gần nhất với điểm số của target
+  // Query the list of 20 users with scores closest to the target score
   const char *sql_get_closest_users =
     "SELECT id, username, score, isOnline "
     "FROM user "
@@ -356,16 +356,16 @@ int list_users_closest_score(sqlite3 *db, const char *target_username, User *use
     return rc;
   }
 
-  // Gán giá trị cho các tham số truy vấn
+  // Bind values to the query parameters
   sqlite3_bind_text(stmt, 1, target_username, -1, SQLITE_STATIC);
   sqlite3_bind_int(stmt, 2, target_score);
 
   int count = 0;
 
-  // Duyệt qua kết quả truy vấn
+  // Iterate through the query results
   while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
     if (count >= 20) {
-      break;  // Giới hạn tối đa là 20 user
+      break;  // Limit to a maximum of 20 users
     }
 
     users[count].id = sqlite3_column_int(stmt, 0);
@@ -376,7 +376,7 @@ int list_users_closest_score(sqlite3 *db, const char *target_username, User *use
     count++;
   }
 
-  *user_count = count;  // Trả về số lượng user tìm được
+  *user_count = count;  // Return the number of users found
 
   sqlite3_finalize(stmt);
   return SQLITE_OK;
@@ -567,8 +567,8 @@ int get_game_histories_by_player(sqlite3 *db, const char *player_name, GameHisto
 int get_game_history_by_id(sqlite3 *db, const char *game_id, GameHistory *game_details) {
   // SQL query to fetch game details by game_id
   const char *sql =
-      "SELECT game_id, player1, player2, player1_score, player2_score, winner, word, start_time, end_time "
-      "FROM game_history WHERE game_id = ?;";
+    "SELECT game_id, player1, player2, player1_score, player2_score, winner, word, start_time, end_time "
+    "FROM game_history WHERE game_id = ?;";
 
   sqlite3_stmt *stmt;
   int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
@@ -594,7 +594,7 @@ int get_game_history_by_id(sqlite3 *db, const char *game_id, GameHistory *game_d
 
     // Fetch moves (simplified, assuming a moves table exists)
     const char *sql_moves =
-        "SELECT player_name, guess, result FROM moves WHERE game_id = ? ORDER BY move_index ASC;";
+      "SELECT player_name, guess, result FROM moves WHERE game_id = ? ORDER BY move_index ASC;";
     sqlite3_stmt *stmt_moves;
 
     rc = sqlite3_prepare_v2(db, sql_moves, -1, &stmt_moves, 0);
@@ -623,111 +623,28 @@ int get_game_history_by_id(sqlite3 *db, const char *game_id, GameHistory *game_d
 }
 
 int get_score_by_username(sqlite3 *db, const char *username, int *score) {
-    const char *sql = "SELECT score FROM user WHERE username = ?";
-    sqlite3_stmt *stmt;
+  const char *sql = "SELECT score FROM user WHERE username = ?";
+  sqlite3_stmt *stmt;
 
-    // Chuẩn bị câu truy vấn
-    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
-    if (rc != SQLITE_OK) {
-        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
-        return rc;
-    }
-
-    // Gán giá trị cho tham số
-    sqlite3_bind_text(stmt, 1, username, -1, SQLITE_STATIC);
-
-    // Thực thi truy vấn
-    if (sqlite3_step(stmt) == SQLITE_ROW) {
-        *score = sqlite3_column_int(stmt, 0);  // Lấy điểm từ cột 0
-        rc = SQLITE_OK;
-    } else {
-        rc = SQLITE_NOTFOUND;  // Không tìm thấy user
-    }
-
-    // Dọn dẹp
-    sqlite3_finalize(stmt);
+  // Prepare the SQL query
+  int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+  if (rc != SQLITE_OK) {
+    fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
     return rc;
+  }
+
+  // Bind the value to the query parameter
+  sqlite3_bind_text(stmt, 1, username, -1, SQLITE_STATIC);
+
+  // Execute the query
+  if (sqlite3_step(stmt) == SQLITE_ROW) {
+    *score = sqlite3_column_int(stmt, 0);  // Retrieve the score from column 0
+    rc = SQLITE_OK;
+  } else {
+    rc = SQLITE_NOTFOUND;  // User not found
+  }
+
+  // Clean up
+  sqlite3_finalize(stmt);
+  return rc;
 }
-
-
-// int save_game_history_to_db(sqlite3 *db, GameHistory *history) {
-//     char *sql = "INSERT INTO game_history (game_id, player1, player2, word, result, moves, move_count) VALUES (?, ?, ?, ?, ?, ?, ?);";
-//     sqlite3_stmt *stmt;
-
-//     // Prepare the SQL statement
-//     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
-//     if (rc != SQLITE_OK) {
-//         fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
-//         return rc;
-//     }
-
-//     // Bind values
-//     sqlite3_bind_text(stmt, 1, history->game_id, -1, SQLITE_STATIC);
-//     sqlite3_bind_text(stmt, 2, history->player1, -1, SQLITE_STATIC);
-//     sqlite3_bind_text(stmt, 3, history->player2, -1, SQLITE_STATIC);
-//     sqlite3_bind_text(stmt, 4, history->word, -1, SQLITE_STATIC);
-//     sqlite3_bind_int(stmt, 5, history->result);
-
-//     // Convert moves array to string (could use JSON or CSV format)
-//     char moves_str[1000] = "";
-//     for (int i = 0; i < history->move_count; i++) {
-//         strcat(moves_str, history->moves[i]);
-//         if (i < history->move_count - 1) {
-//             strcat(moves_str, "|"); // Separator between moves
-//         }
-//     }
-//     sqlite3_bind_text(stmt, 6, moves_str, -1, SQLITE_STATIC);
-//     sqlite3_bind_int(stmt, 7, history->move_count);
-
-//     // Execute the SQL statement
-//     rc = sqlite3_step(stmt);
-//     if (rc != SQLITE_DONE) {
-//         fprintf(stderr, "Execution failed: %s\n", sqlite3_errmsg(db));
-//         sqlite3_finalize(stmt);
-//         return rc;
-//     }
-
-//     sqlite3_finalize(stmt);
-//     return SQLITE_OK;
-// }
-
-// // Hàm lấy dữ liệu GameHistory theo username
-// int get_game_histories_by_username(sqlite3 *db, const char *username, char *response) {
-//     const char *sql = "SELECT game_id, player1, player2, word, result, moves, move_count FROM game_history WHERE player1 = ? OR player2 = ? ORDER BY timestamp DESC";
-//     sqlite3_stmt *stmt;
-//     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
-//     if (rc != SQLITE_OK) {
-//         fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
-//         return rc;
-//     }
-
-//     // Bind username vào câu truy vấn
-//     sqlite3_bind_text(stmt, 1, username, -1, SQLITE_STATIC);
-//     sqlite3_bind_text(stmt, 2, username, -1, SQLITE_STATIC);
-
-//     // Duyệt qua kết quả truy vấn và lưu kết quả vào response (JSON format)
-//     char buffer[1024];
-//     snprintf(response, 2048, "[");
-
-//     while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
-//         char game_id[20], player1[50], player2[50], word[51], moves[1024];
-//         strncpy(game_id, (const char*)sqlite3_column_text(stmt, 0), sizeof(game_id) - 1);
-//         strncpy(player1, (const char*)sqlite3_column_text(stmt, 1), sizeof(player1) - 1);
-//         strncpy(player2, (const char*)sqlite3_column_text(stmt, 2), sizeof(player2) - 1);
-//         strncpy(word, (const char*)sqlite3_column_text(stmt, 3), sizeof(word) - 1);
-//         strncpy(moves, (const char*)sqlite3_column_text(stmt, 5), sizeof(moves) - 1);
-
-//         // Tạo JSON response cho mỗi game history
-//         snprintf(buffer, sizeof(buffer), "{\"game_id\": \"%s\", \"player1\": \"%s\", \"player2\": \"%s\", \"word\": \"%s\", \"moves\": \"%s\"},", game_id, player1, player2, word, moves);
-//         strcat(response, buffer);
-//     }
-
-//     // Xóa dấu phẩy thừa ở cuối
-//     if (strlen(response) > 1) {
-//         response[strlen(response) - 1] = '\0';  // Loại bỏ dấu phẩy cuối cùng
-//     }
-
-//     strcat(response, "]");
-//     sqlite3_finalize(stmt);
-//     return SQLITE_OK;
-// }
