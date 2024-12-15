@@ -5,21 +5,31 @@ This is a project for the network programming practice course.
 ## Project structure
 
 ```sh
-.
-├── client.c
-├── database.c
-├── database.db
-├── database.h
-├── Makefile
-├── model
-│   ├── message.c
-│   └── message.h
-├── seed
-│   ├── run_seed.c
-│   ├── seed
-│   └── seed.c
-├── server.c
-├── wordle.glade
+├── README.md
+└── src
+    ├── client
+    ├── client.c
+    ├── client.o
+    ├── database.c
+    ├── database.db
+    ├── database.h
+    ├── database.o
+    ├── Makefile
+    ├── message.o
+    ├── model
+    │   ├── message.c
+    │   ├── message.h
+    │   └── message.o
+    ├── seed
+    │   ├── run_seed.c
+    │   ├── seed
+    │   └── seed.c
+    ├── server
+    ├── server.c
+    ├── server.o
+    ├── valid_guesses.txt
+    ├── valid_solutions.txt
+    ├── wordle.glade
 ```
 
 This project depends on the following libraries and tools:
