@@ -18,15 +18,15 @@
                 <property name="height-request">60</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Login</property>
+                <property name="label" translatable="yes">Sign In</property>
                 <attributes>
                   <attribute name="font-desc" value="Sans Bold 16"/>
                   <attribute name="weight" value="bold"/>
                 </attributes>
               </object>
               <packing>
-                <property name="x">746</property>
-                <property name="y">71</property>
+                <property name="x">674</property>
+                <property name="y">75</property>
               </packing>
             </child>
             <child>
@@ -37,7 +37,7 @@
                 <property name="can-focus">True</property>
               </object>
               <packing>
-                <property name="x">692</property>
+                <property name="x">595</property>
                 <property name="y">191</property>
               </packing>
             </child>
@@ -49,7 +49,7 @@
                 <property name="can-focus">True</property>
               </object>
               <packing>
-                <property name="x">693</property>
+                <property name="x">595</property>
                 <property name="y">291</property>
               </packing>
             </child>
@@ -65,8 +65,8 @@
                 </attributes>
               </object>
               <packing>
-                <property name="x">641</property>
-                <property name="y">150</property>
+                <property name="x">546</property>
+                <property name="y">159</property>
               </packing>
             </child>
             <child>
@@ -81,7 +81,7 @@
                 </attributes>
               </object>
               <packing>
-                <property name="x">636</property>
+                <property name="x">545</property>
                 <property name="y">259</property>
               </packing>
             </child>
@@ -97,23 +97,23 @@
                 </attributes>
               </object>
               <packing>
-                <property name="x">688</property>
-                <property name="y">483</property>
+                <property name="x">595</property>
+                <property name="y">458</property>
               </packing>
             </child>
             <child>
               <object class="GtkButton" id="GoToSignup">
                 <property name="label" translatable="yes">Go to signup</property>
                 <property name="width-request">116</property>
-                <property name="height-request">34</property>
+                <property name="height-request">35</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <signal name="clicked" handler="on_GoToSignup_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">871</property>
-                <property name="y">487</property>
+                <property name="x">779</property>
+                <property name="y">458</property>
               </packing>
             </child>
             <child>
@@ -127,7 +127,7 @@
                 <signal name="clicked" handler="on_LoginSubmit_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">694</property>
+                <property name="x">595</property>
                 <property name="y">380</property>
               </packing>
             </child>
@@ -145,15 +145,15 @@
               <object class="GtkButton" id="GoToLogin">
                 <property name="label" translatable="yes">Go to login</property>
                 <property name="width-request">105</property>
-                <property name="height-request">34</property>
+                <property name="height-request">35</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <signal name="clicked" handler="on_GoToLogin_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">849</property>
-                <property name="y">642</property>
+                <property name="x">796</property>
+                <property name="y">580</property>
               </packing>
             </child>
             <child>
@@ -162,15 +162,15 @@
                 <property name="height-request">80</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Sign up</property>
+                <property name="label" translatable="yes">Sign Up</property>
                 <attributes>
                   <attribute name="font-desc" value="Sans Bold 16"/>
                   <attribute name="weight" value="bold"/>
                 </attributes>
               </object>
               <packing>
-                <property name="x">746</property>
-                <property name="y">71</property>
+                <property name="x">674</property>
+                <property name="y">75</property>
               </packing>
             </child>
             <child>
@@ -185,8 +185,8 @@
                 </attributes>
               </object>
               <packing>
-                <property name="x">640</property>
-                <property name="y">180</property>
+                <property name="x">588</property>
+                <property name="y">161</property>
               </packing>
             </child>
             <child>
@@ -197,8 +197,8 @@
                 <property name="can-focus">True</property>
               </object>
               <packing>
-                <property name="x">640</property>
-                <property name="y">220</property>
+                <property name="x">595</property>
+                <property name="y">191</property>
               </packing>
             </child>
             <child>
@@ -213,8 +213,8 @@
                 </attributes>
               </object>
               <packing>
-                <property name="x">640</property>
-                <property name="y">300</property>
+                <property name="x">585</property>
+                <property name="y">263</property>
               </packing>
             </child>
             <child>
@@ -225,8 +225,8 @@
                 <property name="can-focus">True</property>
               </object>
               <packing>
-                <property name="x">640</property>
-                <property name="y">330</property>
+                <property name="x">595</property>
+                <property name="y">291</property>
               </packing>
             </child>
             <child>
@@ -241,8 +241,8 @@
                 </attributes>
               </object>
               <packing>
-                <property name="x">640</property>
-                <property name="y">420</property>
+                <property name="x">589</property>
+                <property name="y">363</property>
               </packing>
             </child>
             <child>
@@ -253,8 +253,8 @@
                 <property name="can-focus">True</property>
               </object>
               <packing>
-                <property name="x">640</property>
-                <property name="y">450</property>
+                <property name="x">595</property>
+                <property name="y">391</property>
               </packing>
             </child>
             <child>
@@ -267,8 +267,8 @@
                 <property name="receives-default">True</property>
               </object>
               <packing>
-                <property name="x">640</property>
-                <property name="y">550</property>
+                <property name="x">595</property>
+                <property name="y">480</property>
               </packing>
             </child>
             <child>
@@ -283,8 +283,8 @@
                 </attributes>
               </object>
               <packing>
-                <property name="x">639</property>
-                <property name="y">619</property>
+                <property name="x">595</property>
+                <property name="y">558</property>
               </packing>
             </child>
           </object>
@@ -299,21 +299,9 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
-              <object class="GtkListBox" id="user_list_box">
-                <property name="width-request">375</property>
-                <property name="height-request">578</property>
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-              </object>
-              <packing>
-                <property name="x">711</property>
-                <property name="y">164</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkButton" id="send_challenge_button">
                 <property name="label" translatable="yes">Send Challenge</property>
-                <property name="width-request">200</property>
+                <property name="width-request">150</property>
                 <property name="height-request">40</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -321,14 +309,14 @@
                 <signal name="clicked" handler="on_send_challenge_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">801</property>
+                <property name="x">935</property>
                 <property name="y">752</property>
               </packing>
             </child>
             <child>
               <object class="GtkButton" id="PlayGame">
                 <property name="label" translatable="yes">Play game</property>
-                <property name="width-request">200</property>
+                <property name="width-request">250</property>
                 <property name="height-request">40</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -336,21 +324,21 @@
                 <signal name="clicked" handler="on_PlayGame_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">262</property>
-                <property name="y">215</property>
+                <property name="x">300</property>
+                <property name="y">280</property>
               </packing>
             </child>
             <child>
               <object class="GtkEntry" id="opponent_name_entry">
-                <property name="width-request">200</property>
-                <property name="height-request">40</property>
+                <property name="width-request">250</property>
+                <property name="height-request">50</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="placeholder-text">Enter opponent name</property>
               </object>
               <packing>
-                <property name="x">262</property>
-                <property name="y">164</property>
+                <property name="x">300</property>
+                <property name="y">200</property>
               </packing>
             </child>
             <child>
@@ -360,16 +348,19 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">Home page</property>
+                <attributes>
+                  <attribute name="font-desc" value="Sans Bold 16"/>
+                </attributes>
               </object>
               <packing>
-                <property name="x">603</property>
+                <property name="x">574</property>
                 <property name="y">35</property>
               </packing>
             </child>
             <child>
               <object class="GtkButton" id="GoToHistory">
                 <property name="label" translatable="yes">History</property>
-                <property name="width-request">200</property>
+                <property name="width-request">250</property>
                 <property name="height-request">40</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -377,14 +368,14 @@
                 <signal name="clicked" handler="on_GoToHistory_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">260</property>
-                <property name="y">266</property>
+                <property name="x">300</property>
+                <property name="y">340</property>
               </packing>
             </child>
             <child>
               <object class="GtkButton" id="Logout">
                 <property name="label" translatable="yes">Logout</property>
-                <property name="width-request">200</property>
+                <property name="width-request">250</property>
                 <property name="height-request">40</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
@@ -392,8 +383,8 @@
                 <signal name="clicked" handler="on_Logout_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">262</property>
-                <property name="y">314</property>
+                <property name="x">300</property>
+                <property name="y">400</property>
               </packing>
             </child>
             <child>
@@ -403,6 +394,9 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">User online</property>
+                <attributes>
+                  <attribute name="font-desc" value="Sans Bold 10"/>
+                </attributes>
               </object>
               <packing>
                 <property name="x">710</property>
@@ -413,14 +407,14 @@
               <object class="GtkButton" id="ReloadUserOnlineButton">
                 <property name="label" translatable="yes">Reload</property>
                 <property name="width-request">81</property>
-                <property name="height-request">34</property>
+                <property name="height-request">35</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
               </object>
               <packing>
                 <property name="x">1006</property>
-                <property name="y">127</property>
+                <property name="y">120</property>
               </packing>
             </child>
             <child>
@@ -430,10 +424,13 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">Username</property>
+                <attributes>
+                  <attribute name="font-desc" value="Sans Bold 10"/>
+                </attributes>
               </object>
               <packing>
-                <property name="x">248</property>
-                <property name="y">98</property>
+                <property name="x">260</property>
+                <property name="y">130</property>
               </packing>
             </child>
             <child>
@@ -443,10 +440,40 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">Score</property>
+                <attributes>
+                  <attribute name="font-desc" value="Sans Bold 10"/>
+                </attributes>
               </object>
               <packing>
-                <property name="x">246</property>
-                <property name="y">123</property>
+                <property name="x">320</property>
+                <property name="y">132</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow">
+                <property name="width-request">375</property>
+                <property name="height-request">578</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="shadow-type">in</property>
+                <child>
+                  <object class="GtkViewport">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkListBox" id="user_list_box">
+                        <property name="width-request">375</property>
+                        <property name="height-request">578</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="x">710</property>
+                <property name="y">165</property>
               </packing>
             </child>
           </object>
@@ -472,7 +499,7 @@
               </object>
               <packing>
                 <property name="x">96</property>
-                <property name="y">15</property>
+                <property name="y">40</property>
               </packing>
             </child>
             <child>
@@ -480,10 +507,13 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label">Player 1 Score: 0</property>
+                <attributes>
+                  <attribute name="font-desc" value="Sans Bold 10"/>
+                </attributes>
               </object>
               <packing>
                 <property name="x">1000</property>
-                <property name="y">80</property>
+                <property name="y">150</property>
               </packing>
             </child>
             <child>
@@ -491,10 +521,13 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label">Player 2 Score: 0</property>
+                <attributes>
+                  <attribute name="font-desc" value="Sans Bold 10"/>
+                </attributes>
               </object>
               <packing>
                 <property name="x">1200</property>
-                <property name="y">80</property>
+                <property name="y">150</property>
               </packing>
             </child>
             <child>
@@ -558,13 +591,13 @@
               </object>
               <packing>
                 <property name="x">560</property>
-                <property name="y">30</property>
+                <property name="y">100</property>
               </packing>
             </child>
             <child>
               <object class="GtkEntry" id="word_entry">
                 <property name="width-request">200</property>
-                <property name="height-request">40</property>
+                <property name="height-request">50</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="max-length">5</property>
@@ -572,7 +605,7 @@
               </object>
               <packing>
                 <property name="x">219</property>
-                <property name="y">172</property>
+                <property name="y">150</property>
               </packing>
             </child>
             <child>
@@ -586,8 +619,8 @@
                 <signal name="clicked" handler="on_submit_word_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">218</property>
-                <property name="y">239</property>
+                <property name="x">320</property>
+                <property name="y">220</property>
               </packing>
             </child>
             <child>
@@ -597,10 +630,13 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">Game</property>
+                <attributes>
+                  <attribute name="font-desc" value="Sans Bold 16"/>
+                </attributes>
               </object>
               <packing>
-                <property name="x">608</property>
-                <property name="y">11</property>
+                <property name="x">595</property>
+                <property name="y">40</property>
               </packing>
             </child>
           </object>
@@ -618,15 +654,15 @@
               <object class="GtkButton" id="BackToHome2">
                 <property name="label" translatable="yes">Back to Home</property>
                 <property name="width-request">160</property>
-                <property name="height-request">60</property>
+                <property name="height-request">35</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <signal name="clicked" handler="on_BackToHome_clicked" swapped="no"/>
               </object>
               <packing>
-                <property name="x">44</property>
-                <property name="y">23</property>
+                <property name="x">96</property>
+                <property name="y">40</property>
               </packing>
             </child>
             <child>
@@ -636,50 +672,68 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">History</property>
+                <attributes>
+                  <attribute name="font-desc" value="Sans Bold 16"/>
+                </attributes>
               </object>
               <packing>
-                <property name="x">616</property>
-                <property name="y">35</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkListBox" id="history_list_box">
-                <property name="width-request">461</property>
-                <property name="height-request">618</property>
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-              </object>
-              <packing>
-                <property name="x">440</property>
-                <property name="y">154</property>
+                <property name="x">650</property>
+                <property name="y">40</property>
               </packing>
             </child>
             <child>
               <object class="GtkButton" id="send_rechallenge_button">
                 <property name="label" translatable="yes">Send re-challenger</property>
                 <property name="width-request">200</property>
-                <property name="height-request">52</property>
+                <property name="height-request">40</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
               </object>
               <packing>
-                <property name="x">117</property>
-                <property name="y">182</property>
+                <property name="x">250</property>
+                <property name="y">154</property>
               </packing>
             </child>
             <child>
               <object class="GtkButton" id="view_history_button">
                 <property name="label" translatable="yes">View history</property>
                 <property name="width-request">200</property>
-                <property name="height-request">52</property>
+                <property name="height-request">40</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
               </object>
               <packing>
-                <property name="x">120</property>
-                <property name="y">247</property>
+                <property name="x">250</property>
+                <property name="y">230</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow">
+                <property name="width-request">460</property>
+                <property name="height-request">600</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="shadow-type">in</property>
+                <child>
+                  <object class="GtkViewport">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkListBox" id="history_list_box">
+                        <property name="width-request">461</property>
+                        <property name="height-request">618</property>
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="x">600</property>
+                <property name="y">150</property>
               </packing>
             </child>
           </object>
