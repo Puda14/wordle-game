@@ -944,12 +944,13 @@ void handle_message(int client_sock, Message *message){
       int game_over = 0;
       if (strcmp(guess, session->target_word) == 0)
       {
-        points += 20 - session->current_attempts; // Bonus points for correct guess
+        int b_points = 0;
+        b_points += 20 - session->current_attempts; // Bonus points for correct guess
         if (player_num == 1){
-          session->player1_score += points;
+          session->player1_score += b_points;
         }
         if (player_num == 2){
-          session->player2_score += points;
+          session->player2_score += b_points;
         }
         sprintf(message->payload, "WIN|%s|%d|%d|%d|%s",
                 result, player_num, session->player1_attempts, session->player2_attempts, guess);
@@ -969,7 +970,7 @@ void handle_message(int client_sock, Message *message){
       // Update user score
       user.score += points;
       int upd_score = update_user_score(db, user.username, user.score);
-      if(upd_score != SQLITE_OK){
+      if(upd_score != SQLITE_DONE){
         printf("Failed to update user score\n");
       }else{
         printf("User score updated\n");

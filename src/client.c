@@ -271,6 +271,12 @@ void handle_score_update(Message *msg) {
 
 void handle_game_start_response(Message *msg) {
   if (msg->status == SUCCESS) {
+
+    GtkLabel *player1_score_label = GTK_LABEL(gtk_builder_get_object(builder, "player1_score_label"));
+    gtk_label_set_text(player1_score_label, "");
+    GtkLabel *player2_score_label = GTK_LABEL(gtk_builder_get_object(builder, "player2_score_label"));
+    gtk_label_set_text(player2_score_label, "");
+
     sscanf(msg->payload, "%d|%d", &game_session_id, &player_num);
 
     printf("Game session %d started and you are player %d\n", game_session_id, player_num);
