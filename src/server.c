@@ -955,9 +955,9 @@ void handle_message(int client_sock, Message *message){
       session->current_attempts++;
       // Check game-over conditions
       int game_over = 0;
+      int b_points = 0;
       if (strcmp(guess, session->target_word) == 0)
       {
-        int b_points = 0;
         b_points += 20 - session->current_attempts; // Bonus points for correct guess
         if (player_num == 1){
           session->player1_score += b_points;
@@ -981,7 +981,7 @@ void handle_message(int client_sock, Message *message){
       }
 
       // Update user score
-      user.score += points;
+      user.score += points + b_points;
       int upd_score = update_user_score(db, user.username, user.score);
       if(upd_score != SQLITE_DONE){
         printf("Failed to update user score\n");
