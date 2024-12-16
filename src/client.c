@@ -374,6 +374,7 @@ void handle_game_guess_response(Message *msg) {
       g_print("Failed to parse DRAW game guess response payload\n");
       return;
     }
+    printf("Receive Draw result\n");
     is_game_over = TRUE;
     is_in_game = 0; // Mark game as over
   } else if (strncmp(msg->payload, "CONTINUE", 8) == 0) {

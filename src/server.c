@@ -935,6 +935,10 @@ void handle_message(int client_sock, Message *message){
         {
           session->current_player = 2; // Pass turn to player 2
         }
+        else if (session->player2_attempts < 6)
+        {
+        session->current_player = 2; // Pass turn to player 2 if player 1 has finished all attempts
+        }
       }
       else
       {
@@ -943,6 +947,10 @@ void handle_message(int client_sock, Message *message){
         if (session->player2_attempts < 6)
         {
           session->current_player = 1; // Pass turn to player 1
+        }
+        else if (session->player1_attempts < 6)
+        {
+        session->current_player = 1; // Pass turn to player 1 if player 2 has finished all attempts
         }
       }
 
@@ -953,6 +961,7 @@ void handle_message(int client_sock, Message *message){
 
       // Update current attempts
       session->current_attempts++;
+      printf("Player 1 attemps: %d, Player 2 attemps: %d\n",session->player1_attempts,session->player2_attempts);
       // Check game-over conditions
       int game_over = 0;
       int b_points = 0;
@@ -973,6 +982,7 @@ void handle_message(int client_sock, Message *message){
       {
         sprintf(message->payload, "DRAW|%d|%d", session->player1_attempts, session->player2_attempts);
         game_over = 1;
+        printf("Send draw result\n");
       }
       else
       {
