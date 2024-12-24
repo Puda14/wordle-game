@@ -678,6 +678,14 @@ void handle_message(int client_sock, Message *message){
           if (update_status == SQLITE_DONE || update_status == SQLITE_OK) {
               message->status = SUCCESS;
               strcpy(message->payload, "Logout successful");
+              // Clear PlayerInfo
+              for(int i = 0; i < MAX_PLAYERS;i++){
+                if(strcmp(player_list[i].player_name,username) == 0){
+                    player_list[i].player_sock = -1; // Clear the player's socket
+                    memset(player_list[i].player_name, 0, sizeof(player_list[i].player_name)); // Clear the player's name
+                    break;
+                }
+            }
           } else {
               message->status = INTERNAL_SERVER_ERROR;
               strcpy(message->payload, "Failed to update user status");
